@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '8@epptukh4!!z%+w23xx4g2y@i!bqcdpzs3r^03zrza17!ln7r'
+SECRET_KEY = '^mk809l4+tw(irpg84b$(_%zjru28d#(x8prddfkh=hcepl_nw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,7 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'EReceipt.apps.EreceiptConfig',
+
+    # REST Framework
+    'rest_framework',
+
+    # EReceipt 앱
+    'EReceipt',
 ]
 
 MIDDLEWARE = [
