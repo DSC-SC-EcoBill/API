@@ -2,28 +2,46 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-# from .models import Users, Devices, Receipt, Qrcodes, Logs
+from .models import Users, Devices, Receipt, Qrcodes, Logs
 
+
+# # sign up
+# class CreateUserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ('id', 'username', 'password')
+#         extra_kwargs = {"password": {"write_only": True}}
+#
+#     def create(self, validated_data):
+#         user = User.objects.create_user(
+#             validated_data["username"], None, validated_data["password"]
+#         )
+#         return user
 
 # sign up
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ("id", "username", "password")
-        extra_kwargs = {"password": {"write_only": True}}
+        model = Users
+        fields = ('user_id', 'password', 'name', 'email')
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            validated_data["username"], None, validated_data["password"]
+        user = Users.objects.create_user(
+            validated_data['user_id'], None, validated_data['password']
         )
         return user
 
 
-# 접속중인지 확인
+# # 접속중인지 확인
+# class UserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ("id", "username")
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ("id", "username")
+        model = Users
+        fields = ('user_id', 'name')
 
 
 # sign in

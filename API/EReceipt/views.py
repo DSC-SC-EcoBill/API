@@ -8,7 +8,6 @@ from rest_framework.decorators import api_view
 from knox.models import AuthToken
 
 from .serializers import CreateUserSerializer, UserSerializer, LoginUserSerializer
-from .models import Users, Devices, Receipt, Qrcodes, Logs
 
 
 @api_view(['GET'])
@@ -20,7 +19,7 @@ class RegistrationAPI(generics.GenericAPIView):
     serializer_class = CreateUserSerializer
 
     def post(self, request, *args, **kwargs):
-        if len(request.data["username"]) < 6 or len(request.data["password"]) < 4:
+        if len(request.data["user_id"]) < 6 or len(request.data["password"]) < 4:
             body = {"message": "short field"}
             return Response(body, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(data=request.data)
@@ -31,7 +30,7 @@ class RegistrationAPI(generics.GenericAPIView):
                 "user": UserSerializer(
                     user, context=self.get_serializer_context()
                 ).data,
-                "token": AuthToken.objects.create(user)[1],
+                "token": AuthToken.objects.create(user),
             }
         )
 

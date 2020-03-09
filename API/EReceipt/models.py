@@ -8,7 +8,7 @@ class Users(models.Model):
     password = models.CharField(max_length=40)
     name = models.CharField(max_length=16)
     jumin_no = models.IntegerField(null=True)
-    email = models.CharField(max_length=64)
+    email = models.EmailField(max_length=64)
 
 
 class Devices(models.Model):
