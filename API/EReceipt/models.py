@@ -22,7 +22,7 @@ class Receipt(models.Model):
     receipt_date = models.DateTimeField(auto_now_add=True)
     qr_url = models.TextField()
     flag = models.IntegerField(default=0)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Guests, on_delete=models.CASCADE)
 
 
 class Qrcodes(models.Model):
