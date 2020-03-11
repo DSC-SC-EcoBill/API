@@ -7,7 +7,12 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from knox.models import AuthToken
 
-# from .serializers import
+# Models
+from .models import Guests, Devices, Receipt, Qrcodes
+
+# Serializers
+from .serializers import SignupSerializer, SigninSerializer, CreateReceiptSerializer, \
+    QrUrlSerializer, GetListSerializer, GetItemSerializer
 
 
 @api_view(['GET'])
@@ -36,11 +41,19 @@ def MakeQR(request):
 # QR리딩 후 영수증 이미지 반환
 @api_view(['GET'])
 def ReturnImg(request):
-    return Response('Return IMG')
+    return Response('Return Img after QR Reading')
 
 
 # 목록 반환
 @api_view(['GET'])
-def ReturnList(request):
-    return Response('Return List')
+def ReturnList(request, user):
+    # now_person = Receipt.objects.get(user=user)
+    # serializer = GetListSerializer(now_person)
+    return Response('id : {}, Return List'.format(user))
+
+
+# 선택한 목록의 영수증 이미지 반환
+@api_view(['GET'])
+def ReturnItemImg(request):
+    return Response('Return Img when request Item')
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HelloAPI, SignUp, SignIn, MakeQR, ReturnImg, ReturnList
+from .views import HelloAPI, SignUp, SignIn, MakeQR, ReturnImg, ReturnList, ReturnItemImg
 
 urlpatterns = [
     path('hello/', HelloAPI),
@@ -8,5 +8,6 @@ urlpatterns = [
     path('user/signin/', SignIn),
     path('main/makeqr/', MakeQR),
     path('main/rimg/', ReturnImg),
-    path('main/rlist/', ReturnList),
+    path('main/rlist/<int:user>/', ReturnList),
+    path('main/ritemimg/', ReturnItemImg),
 ]

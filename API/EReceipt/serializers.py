@@ -43,7 +43,7 @@ class QrUrlSerializer(serializers.ModelSerializer):
 class GetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('receipt_date', 'user')
+        fields = ('id', 'receipt_date', 'user')
 
 
 # 선택한 날짜와 시간의 맞는 영수증 이미지
