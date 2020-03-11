@@ -5,52 +5,16 @@ from django.contrib.auth.models import User
 from .models import Users, Devices, Receipt, Qrcodes, Logs
 
 
-# # sign up
-# class CreateUserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ('id', 'username', 'password')
-#         extra_kwargs = {"password": {"write_only": True}}
-#
-#     def create(self, validated_data):
-#         user = User.objects.create_user(
-#             validated_data["username"], None, validated_data["password"]
-#         )
-#         return user
+# 회원가입
 
-# sign up
-class CreateUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Users
-        fields = ('user_id', 'password', 'name', 'email')
-        extra_kwargs = {'password': {'write_only': True}}
+# 로그인
 
-    def create(self, validated_data):
-        user = Users.objects.create_user(
-            validated_data['user_id'], None, validated_data['password']
-        )
-        return user
+# 생성된 행의 사용자를 확인
 
+# QR코드로 변환될 확인 url
 
-# # 접속중인지 확인
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ("id", "username")
+# 해당 DB에 사용자 추가
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Users
-        fields = ('user_id', 'name')
+# 목록 가져오기
 
-
-# sign in
-class LoginUserSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-
-    def validate(self, data):
-        user = authenticate(**data)
-        if user and user.is_active:
-            return user
-        raise serializers.ValidationError('Unable to sign in with provided credentials')
+# 선택한 날짜와 시간의 맞는 영수증 이미지

@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from knox.models import AuthToken
 
-from .serializers import CreateUserSerializer, UserSerializer, LoginUserSerializer
+# from .serializers import
 
 
 @api_view(['GET'])
@@ -15,47 +15,32 @@ def HelloAPI(request):
     return Response('hello world!')
 
 
-class RegistrationAPI(generics.GenericAPIView):
-    serializer_class = CreateUserSerializer
-
-    def post(self, request, *args, **kwargs):
-        if len(request.data["user_id"]) < 6 or len(request.data["password"]) < 4:
-            body = {"message": "short field"}
-            return Response(body, status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response(
-            {
-                "user": UserSerializer(
-                    user, context=self.get_serializer_context()
-                ).data,
-                "token": AuthToken.objects.create(user),
-            }
-        )
+# 회원가입
+@api_view(['POST'])
+def SignUp(request):
+    return Response('Sign up')
 
 
-class LoginAPI(generics.GenericAPIView):
-    serializer_class = LoginUserSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
-        return Response(
-            {
-                "user": UserSerializer(
-                    user, context=self.get_serializer_context()
-                ).data,
-                "token": AuthToken.objects.create(user)[1],
-            }
-        )
+# 로그인
+@api_view(['POST'])
+def SignIn(request):
+    return Response('Sign in')
 
 
-class UserAPI(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
+# 이미지 추가 및 확인 링크 반환
+@api_view(['POST'])
+def MakeQR(request):
+    return Response('Make QR')
 
-    def get_object(self):
-        return self.request.user
+
+# QR리딩 후 영수증 이미지 반환
+@api_view(['GET'])
+def ReturnImg(request):
+    return Response('Return IMG')
+
+
+# 목록 반환
+@api_view(['GET'])
+def ReturnList(request):
+    return Response('Return List')
 

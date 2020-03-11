@@ -16,8 +16,9 @@ class Devices(models.Model):
 
 
 class Receipt(models.Model):
-    receipt_img_url = models.CharField(max_length=1000)
+    receipt_img_url = models.TextField()
     receipt_date = models.DateTimeField(auto_now_add=True)
+    qr_url = models.TextField()
     flag = models.IntegerField(default=0)
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
 
