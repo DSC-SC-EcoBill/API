@@ -9,7 +9,6 @@ from knox.models import AuthToken
 
 # from .serializers import
 
-# pull 테스트 하라고 주석 달았다. 
 
 @api_view(['GET'])
 def HelloAPI(request):
