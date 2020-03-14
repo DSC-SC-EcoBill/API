@@ -34,8 +34,8 @@ def SignIn(request):
 
 # 이미지 추가 및 확인 링크 반환
 @api_view(['POST'])
-def MakeQR(request):
-    return Response('Make QR')
+def Upload_Receipt(request):
+    return Response('daum.net')
 
 
 # QR리딩 후 영수증 이미지 반환
