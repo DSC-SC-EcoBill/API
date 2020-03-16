@@ -1,28 +1,44 @@
+from abc import ABC
+
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from .models import Guests, Devices, Receipt, Qrcodes
+from .models import Devices, Receipt, Qrcodes
 
 
 # 회원가입
 class SignupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Guests
-        fields = ('user_id', 'password', 'name', 'jumin_no', 'email')
+        model = User
+        fields = ('id', 'username', 'password', 'first_name', 'email')
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        return 'create'
+        user = User.objects.create_user(
+            username=validated_data["username"], password=validated_data["password"], first_name=validated_data["first_name"],
+            email=validated_data["email"]
+        )
+        return user
+
+
+# 접속 유지중인가 확인
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username")
 
 
 # 로그인
-class SigninSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Guests
-        fields = ('user_id', 'password')
+class SigninSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
 
-    def validate(self, attrs):
-        return 'validate'
+    def validate(self, data):
+        user = authenticate(**data)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError("Unable to log in with provided credentials.")
 
 
 # 생성된 행의 사용자를 확인
@@ -51,4 +67,3 @@ class GetItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = ('receipt_img_url', 'user')
-
