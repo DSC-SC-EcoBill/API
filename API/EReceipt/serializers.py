@@ -3,7 +3,6 @@ from abc import ABC
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
-
 from .models import Receipt, Qrcodes, ImageCache
 
 
@@ -112,7 +111,3 @@ class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
-
-
-
-
