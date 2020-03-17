@@ -20,3 +20,14 @@ class Qrcodes(models.Model):
     qrcode_img_url = models.TextField(default='')
     qrcode_date = models.DateTimeField(auto_now_add=True)
     receipt = models.ForeignKey(Receipt, on_delete=models.CASCADE)
+
+
+# 영수증 이미지를 잠시 저장하는 모델
+class ImageCache(models.Model):
+    upload_data = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(default='media/default_image.jpg')
+
+    def __str__(self):
+        return self.image.name
+
+

@@ -3,6 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.response import Response
+from rest_framework.parsers import FileUploadParser
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from knox.models import AuthToken
@@ -14,7 +15,7 @@ from google.cloud import storage
 from .models import User, Devices, Receipt, Qrcodes
 
 # Serializers
-from .serializers import SignupSerializer, SigninSerializer, CreateReceiptSerializer, QrUrlSerializer, GetListSerializer, GetItemSerializer, UserSerializer
+from .serializers import *
 
 
 @api_view(['GET'])
@@ -81,10 +82,23 @@ def Upload_Receipt(request):
     file_name = './receipt_img/receipt.jpg'     # 업로드할 이미지의 내부 경로
     blob_name = 'receipts/test_upload.jpg'      # 업로드할 이미지의 gcs 경로
 
-    upload_file_gcs(file_name, blob_name)
-    file_linkurl = get_linkurl_gcs(blob_name)
-    print(file_linkurl)
+    # upload_file_gcs(file_name, blob_name)
+    # file_linkurl = get_linkurl_gcs(blob_name)
+    # print(file_linkurl)
     return Response('upload_receipt')
+
+
+class UplaodReceipt(APIView):
+    parser_classes = (FileUploadParser, )
+
+    def post(self, request, *args, **kwargs):
+        file_serializer = ImageCacheSerializer(data=request.data)
+
+        if file_serializer.is_valid():
+            file_serializer.save()
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # GCS 연결 관련 함수들

@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from .models import Devices, Receipt, Qrcodes
+from .models import Devices, Receipt, Qrcodes, ImageCache
 
 
 # 회원가입
@@ -67,3 +67,10 @@ class GetItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = ('receipt_img_url', 'user')
+
+
+# 영수증 이미지를 잠시 저장하는 시리얼라이저
+class ImageCacheSerializer(serializers.ModelField):
+    class Meta:
+        model = ImageCache
+        fields = ('image', )
