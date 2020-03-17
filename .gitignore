@@ -5,3 +5,4 @@ API/bin/__pycache__/*
 API/API/__pycache__/*
 API/EReceipt/__pycache__/*
 API/EReceipt/migrations/__pycache__/*
+gcp_keys
