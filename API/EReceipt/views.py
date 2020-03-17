@@ -6,12 +6,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from knox.models import AuthToken
-
+from rest_framework import mixins
+from rest_framework import generics
 # Models
-from .models import User, Devices, Receipt, Qrcodes
+from .models import Receipt, Qrcodes, ImageCache
 
 # Serializers
-from .serializers import SignupSerializer, SigninSerializer, CreateReceiptSerializer, QrUrlSerializer, GetListSerializer, GetItemSerializer, UserSerializer
+from .serializers import SignupSerializer, SigninSerializer, CreateReceiptSerializer, QrUrlSerializer, \
+    UserSerializer, NewReceiptURLSerializer, ReceiptListSerializer, ReceiptDateSerializer, NewQrcodesSerializer, \
+    ImageCacheSerializer
 
 
 @api_view(['GET'])
@@ -96,4 +99,54 @@ def ReturnList(request, user):
 @api_view(['GET'])
 def ReturnItemImg(request):
     return Response('Return Img when request Item')
+
+
+class NewQrcodes(generics.GenericAPIView):
+    serializer_class = NewQrcodesSerializer
+
+
+# 영수증 전체 목록 가져오기
+class ReturnReceiptImgList(mixins.ListModelMixin,
+                           mixins.CreateModelMixin,
+                           generics.GenericAPIView):
+    queryset = Receipt.objects.all()
+    serializer_class = ReceiptListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+# 디바이스에서 받아온 영수증 투플생성
+class NewReceiptURL(generics.GenericAPIView):
+    serializer_class = NewReceiptURLSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        receipt = serializer.save()
+        return Response(
+            {
+                "receipt": NewReceiptURLSerializer(
+                    receipt, context=self.get_serializer_context()
+                ).data
+            }
+        )
+
+
+# 서버로 보내기전 잠시 저장할 영수증이미지 생성
+class ImageCache(generics.GenericAPIView):
+    serializer_class = ImageCacheSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        receipt = serializer.save()
+
+
+# 선택한 날짜와 시간의 맞는 영수증 이미지
+class ReceiptDate(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
 
