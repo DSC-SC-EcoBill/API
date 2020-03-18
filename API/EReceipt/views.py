@@ -21,11 +21,6 @@ from .models import Receipt, Qrcodes, ImageCache
 from .serializers import *
 
 
-@api_view(['GET'])
-def HelloAPI(request):
-    return Response('hello world!')
-
-
 # 회원가입
 class SignupAPI(generics.GenericAPIView):
     serializer_class = SignupSerializer
@@ -48,7 +43,7 @@ class SignupAPI(generics.GenericAPIView):
 
 
 # 로그인
-class LoginAPI(generics.GenericAPIView):
+class SigninAPI(generics.GenericAPIView):
     serializer_class = SigninSerializer
 
     def post(self, request, *args, **kwargs):
@@ -72,12 +67,6 @@ class UserAPI(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
-
-
-# 로그인
-@api_view(['POST'])
-def SignIn(request):
-    return Response('Sign in')
 
 
 # 이미지 업로드 및 확인 링크 반환

@@ -39,20 +39,6 @@ class SigninSerializer(serializers.Serializer):
         raise serializers.ValidationError("Unable to log in with provided credentials.")
 
 
-# 생성된 행의 사용자를 확인
-class CreateReceiptSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Receipt
-        fields = ('receipt_img_url', 'user')
-
-
-# QR코드로 변환될 확인 url
-class QrUrlSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Receipt
-        fields = ('id', 'qr_url')
-
-
 # 서버로 보내기전 잠시 저장할 영수증이미지 생성
 class ImageCacheSerializer(serializers.ModelSerializer):
     class Meta:
