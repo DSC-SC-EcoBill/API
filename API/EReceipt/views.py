@@ -65,6 +65,7 @@ class LoginAPI(generics.GenericAPIView):
         )
 
 
+# 로그인 확인
 class UserAPI(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
@@ -207,7 +208,14 @@ class ImageCache(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        receipt = serializer.save()
+        image = serializer.save()
+        return Response(
+            {
+                "image": ImageCacheSerializer(
+                    image, context=self.get_serializer_context()
+                ).data
+            }
+        )
 
 
 # 선택한 날짜와 시간의 맞는 영수증 이미지
