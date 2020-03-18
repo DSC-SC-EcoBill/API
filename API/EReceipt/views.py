@@ -69,60 +69,6 @@ class UserAPI(generics.RetrieveAPIView):
         return self.request.user
 
 
-# 이미지 업로드 및 확인 링크 반환
-@api_view(['POST'])
-def Upload_Receipt(request):
-    file_name = './receipt_img/receipt.jpg'     # 업로드할 이미지의 내부 경로
-    blob_name = 'receipts/test_upload.jpg'      # 업로드할 이미지의 gcs 경로
-
-    check_link_gcs()
-    # upload_file_gcs(file_name, blob_name)
-    # file_linkurl = get_linkurl_gcs(blob_name)
-    # print(file_linkurl)
-    return Response('upload_receipt')
-
-
-# GCS 연결 관련 함수들
-# 스토리지 연결 테스트용 함수
-def check_link_gcs():
-    storage_client = storage.Client()
-    buckets = list(storage_client.list_buckets())
-    print(buckets)
-
-
-# 스토리지 파일 업로드 함수
-def upload_file_gcs(file_name, destination_blob_name, bucket_name='dsc_ereceipt_storage'):
-    # file_name : 업로드할 파일명
-    # destination_blob_name : 업로드될 경로와 파일명
-    # bucket_name : 업로드할 버킷명
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-
-    blob.upload_from_filename(file_name)
-
-    print(
-        "File {} uploaded to {}".format(
-            file_name, destination_blob_name
-        )
-    )
-
-
-# 스토리지에 업로드된 파일의 링크url을 가져오는 함수
-def get_linkurl_gcs(blob_name, bucket_name='dsc_ereceipt_storage'):
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-
-    print(
-        "Blob {}'s url : {}".format(
-            blob_name, blob.public_url
-        )
-    )
-
-    return blob.public_url
-
-
 # QR리딩 후 영수증 이미지 반환
 @api_view(['GET'])
 def ReturnImg(request):
@@ -179,21 +125,113 @@ class NewReceiptURL(generics.GenericAPIView):
 
 
 # 서버로 보내기전 잠시 저장할 영수증이미지 생성
-class ImageCache(generics.GenericAPIView):
-    serializer_class = ImageCacheSerializer
+class UploadIMG(generics.GenericAPIView):
+    serializer_class = ImageCacheSerializer  # 이미지를 스토리지로 넘기기전에 잠시 저장해두는 시리얼라이저
 
     def post(self, request, *args, **kwargs):
+        # request로 올라온 이미지를 임시저장 테이블에 저장
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        receipt = serializer.save()
-        image = serializer.save()
-        return Response(
-            {
-                "image": ImageCacheSerializer(
-                    image, context=self.get_serializer_context()
-                ).data
-            }
+        if serializer.is_valid(raise_exception=True):
+            img_data = serializer.save()
+
+        # DB의 이미지 데이터 가져오기
+        cache_img = ImageCache.objects.get(id=img_data.id, device_id=img_data.device_id)    # 업로드할 튜플
+        file_name = cache_img.image                                                         # 업로드할 이미지의 파일 객체
+        blob_name = 'receipts/{}.jpg'.format(cache_img.image_name)                          # 업로드할 이미지의 gcs 경로
+
+        # gcs에 이미지 업로드 요청
+        try:
+            upload_file_gcs(file_name, blob_name)
+        except Exception as ex:
+            print('Hey! : ', ex)
+
+        # gcs에 저장된 이미지의 link url 반환 요청
+        try:
+            link_url = get_linkurl_gcs(blob_name)
+        except Exception as ex:
+            print('Hey!: ', ex)
+
+        # 받은 link url을 이용해 Receipt Tuple 생성
+        dummy_user = User(id=1)
+        new_receipt = Receipt(
+            receipt_img_url=link_url,
+            device_id=img_data.device_id,
+            user=dummy_user
         )
+        new_receipt.save()
+
+        # 사용자를 확인할 수 있는 임의의 url 생성 후 반환
+        check_user_link = 'http://127.0.0.1:8000/api/main/check_user_link/{}'.format(new_receipt.id)
+        return Response(check_user_link)
+
+
+# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
+# 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
+# class CheckUser(generics.GenericAPIView):
+#     serializer_class = CheckUserSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         serializers = self.get_serializer(data=request.data)
+#         my_receipt = Receipt.objects.get(id=serializers.id)     # 영수증 튜플
+#         my_receipt.user = User(username=serializers.username)
+#
+#         if serializers.is_Storage == 1:
+#             my_receipt.is_Storage = 1
+#
+#         my_receipt.save()
+
+
+
+# @api_view(['GET'])
+# def check_user(request, creat_receipt_id, username, issave=0):
+#     my_receipt = Receipt.objects.get(id=creat_receipt_id)
+#     my_receipt.user = username
+#
+#     if issave == 1:
+#         my_receipt.is_Storage = 1
+#
+#     my_receipt.save()
+
+
+# GCS 연결 관련 함수들
+# 스토리지 연결 테스트용 함수
+def check_link_gcs():
+    storage_client = storage.Client()
+    buckets = list(storage_client.list_buckets())
+    print(buckets)
+
+
+# 스토리지 파일 업로드 함수
+def upload_file_gcs(file_name, destination_blob_name, bucket_name='dsc_ereceipt_storage'):
+    # file_name : 업로드할 파일명
+    # destination_blob_name : 업로드될 경로와 파일명
+    # bucket_name : 업로드할 버킷명
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+
+    blob.upload_from_file(file_name)
+
+    print(
+        "File {} uploaded to {}".format(
+            file_name, destination_blob_name
+        )
+    )
+
+
+# 스토리지에 업로드된 파일의 링크url을 가져오는 함수
+def get_linkurl_gcs(blob_name, bucket_name='dsc_ereceipt_storage'):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+
+    print(
+        "Blob {}'s url : {}".format(
+            blob_name, blob.public_url
+        )
+    )
+
+    return blob.public_url
 
 
 # 선택한 날짜와 시간의 맞는 영수증 이미지
