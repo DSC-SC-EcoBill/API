@@ -86,23 +86,11 @@ def Upload_Receipt(request):
     file_name = './receipt_img/receipt.jpg'     # 업로드할 이미지의 내부 경로
     blob_name = 'receipts/test_upload.jpg'      # 업로드할 이미지의 gcs 경로
 
+    check_link_gcs()
     # upload_file_gcs(file_name, blob_name)
     # file_linkurl = get_linkurl_gcs(blob_name)
     # print(file_linkurl)
     return Response('upload_receipt')
-
-
-class UplaodReceipt(APIView):
-    parser_classes = (FileUploadParser, )
-
-    def post(self, request, *args, **kwargs):
-        file_serializer = ImageCacheSerializer(data=request.data)
-
-        if file_serializer.is_valid():
-            file_serializer.save()
-            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # GCS 연결 관련 함수들
@@ -208,6 +196,7 @@ class ImageCache(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        receipt = serializer.save()
         image = serializer.save()
         return Response(
             {
