@@ -20,4 +20,7 @@ class Qrcodes(models.Model):
 # 영수증 이미지를 잠시 저장하는 모델
 class ImageCache(models.Model):
     upload_data = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(default='media/default_image.jpg')
+    device_id = models.CharField(max_length=20, default='')
+    image_name = models.CharField(max_length=20, default='')
+    image = models.ImageField(default='default_img.jpg')
+
