@@ -3,12 +3,7 @@ from abc import ABC
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
-<<<<<<< HEAD
-
-from .models import Devices, Receipt, Qrcodes, File
-=======
 from .models import Receipt, Qrcodes, ImageCache
->>>>>>> c49e3774774f45f4b14a0e70b16af75324eaaf80
 
 
 # 회원가입
@@ -111,16 +106,8 @@ class ReceiptListSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
 
 
-<<<<<<< HEAD
-# 영수증 이미지를 잠시 저장하는 시리얼라이저
-class FileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = File
-        fields = "__all__"
-=======
 # 선택한 날짜와 시간의 맞는 영수증 이미지리스트
 class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
->>>>>>> c49e3774774f45f4b14a0e70b16af75324eaaf80

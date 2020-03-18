@@ -11,12 +11,8 @@ urlpatterns = [
     path('main/rimg/', ReturnImg),
     path('main/rlist/<int:user>/', ReturnList),
     path('main/ritemimg/', ReturnItemImg),
-<<<<<<< HEAD
-    path('', FileUploadView.as_view())
-=======
     path('main/return_receipt_img_List/', ReturnReceiptImgList.as_view()),
     path('main/receipt_url/', NewReceiptURL.as_view()),
     path('main/receipt_date/', ReceiptDate.as_view()),
     path('main/imagecache/', ImageCache.as_view()),
->>>>>>> c49e3774774f45f4b14a0e70b16af75324eaaf80
 ]
