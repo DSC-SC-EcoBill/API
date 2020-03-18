@@ -8,3 +8,4 @@ API/EReceipt/__pycache__/*
 API/EReceipt/migrations/__pycache__
 gcp_keys
 *.pyc
+API/media/
