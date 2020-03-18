@@ -43,13 +43,30 @@ class SigninSerializer(serializers.Serializer):
 class ImageCacheSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageCache
-        fields = ('id', 'upload_data', 'image')
+        fields = ('id', 'upload_data', 'device_id', 'image_name', 'image')
 
         def create(self, validated_data):
             image = ImageCache.objects.create(
-                upload_data=validated_data["upload_data"], image=validated_data["image"]
+                upload_data=validated_data["upload_data"],
+                image=validated_data["image"]
             )
             return image
+
+
+class CheckUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receipt
+        fields = ('id', 'receipt_img_url', 'user', 'is_Storage')
+
+        def update(self, validated_data):
+            receipt = Receipt.objects.update(
+                id=validated_data["id"],
+                receipt_img_url=validated_data["receipt_img_url"],
+                user=validated_data["username"],
+                is_Storage=validated_data["is_Storage"]
+            )
+            return receipt
+
 
 
 # 서버에서 받아온 영수증주소 투플생성
