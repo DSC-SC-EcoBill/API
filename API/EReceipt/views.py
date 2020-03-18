@@ -88,12 +88,11 @@ def Upload_Receipt(request):
     return Response('upload_receipt')
 
 
-class UplaodReceipt(APIView):
+class FileUploadView(APIView):
     parser_classes = (FileUploadParser, )
 
     def post(self, request, *args, **kwargs):
-        file_serializer = ImageCacheSerializer(data=request.data)
-
+        file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid():
             file_serializer.save()
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
