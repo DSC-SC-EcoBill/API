@@ -53,6 +53,7 @@ class ImageCacheSerializer(serializers.ModelSerializer):
             return image
 
 
+# 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
@@ -62,8 +63,7 @@ class CheckUserSerializer(serializers.ModelSerializer):
             receipt = Receipt.objects.update(
                 id=validated_data["id"],                            # 영수증의 id
                 receipt_img_url=validated_data["receipt_img_url"],  # return용
-                is_Storage=validated_data["is_Storage"],
-                user_id=validated_data["user_id"],                  # user의 id
+                user_id=validated_data["user_id"]                   # user의 id
             )
             return receipt
 

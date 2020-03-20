@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 
 # Create your models here.
+# 영수증 이미지
 class Receipt(models.Model):
     receipt_img_url = models.TextField(default='')
     receipt_date = models.DateTimeField(auto_now_add=True)

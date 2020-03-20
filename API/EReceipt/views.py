@@ -198,41 +198,24 @@ class UploadIMG(generics.GenericAPIView):
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
-# Error :  django.db.utils.IntegrityError: (1048, "Column 'user_id' cannot be null") 에러가 나서 해결 해야됨;;; 
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            check_data = serializer.save()
+            my_receipt = Receipt.objects.get(id=request.data['id'])             # 영수증 튜플
+            my_receipt.user_id = self.get_user_id(request.data['username'])
 
-            my_receipt = Receipt.objects.get(id=check_data.id)      # 영수증 튜플
-            my_receipt.user_id = self.get_user_id(check_data.username)
+            my_receipt.save()   # Tuple Update
 
-        if serializers.is_Storage == 1:                         # 저장 유무
-            my_receipt.is_Storage = 1
-
-        my_receipt.save()
-
-        return my_receipt.receipt_img_url
+        return Response(my_receipt.receipt_img_url)
 
     # 사용자의 고유 id를 반환하는 함수
     def get_user_id(self, username):
         user_id = User.objects.get(username=username).id
         print(user_id)
         return user_id
-
-
-# @api_view(['GET'])
-# def check_user(request, creat_receipt_id, username, issave=0):
-#     my_receipt = Receipt.objects.get(id=creat_receipt_id)
-#     my_receipt.user = username
-#
-#     if issave == 1:
-#         my_receipt.is_Storage = 1
-#
-#     my_receipt.save()
 
 
 # 선택한 날짜와 시간의 맞는 영수증 이미지
