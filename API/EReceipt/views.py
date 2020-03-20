@@ -141,13 +141,13 @@ class UploadIMG(generics.GenericAPIView):
 
         # gcs에 이미지 업로드 요청
         try:
-            upload_file_gcs(file_name, blob_name)
+            self.upload_file_gcs(file_name, blob_name)
         except Exception as ex:
             print('Hey! : ', ex)
 
         # gcs에 저장된 이미지의 link url 반환 요청
         try:
-            link_url = get_linkurl_gcs(blob_name)
+            link_url = self.get_linkurl_gcs(blob_name)
         except Exception as ex:
             print('Hey!: ', ex)
 
@@ -164,22 +164,64 @@ class UploadIMG(generics.GenericAPIView):
         check_user_link = 'http://127.0.0.1:8000/api/main/check_user_link/{}'.format(new_receipt.id)
         return Response(check_user_link)
 
+    # 스토리지 파일 업로드 함수
+    def upload_file_gcs(self, file_name, destination_blob_name, bucket_name='dsc_ereceipt_storage'):
+        # file_name : 업로드할 파일명
+        # destination_blob_name : 업로드될 경로와 파일명
+        # bucket_name : 업로드할 버킷명
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+
+        blob.upload_from_file(file_name)
+
+        print(
+            "File {} uploaded to {}".format(
+                file_name, destination_blob_name
+            )
+        )
+
+    # 스토리지에 업로드된 파일의 링크url을 가져오는 함수
+    def get_linkurl_gcs(self, blob_name, bucket_name='dsc_ereceipt_storage'):
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+
+        print(
+            "Blob {}'s url : {}".format(
+                blob_name, blob.public_url
+            )
+        )
+
+        return blob.public_url
+
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
-# class CheckUser(generics.GenericAPIView):
-#     serializer_class = CheckUserSerializer
-#
-#     def get(self, request, *args, **kwargs):
-#         serializers = self.get_serializer(data=request.data)
-#         my_receipt = Receipt.objects.get(id=serializers.id)     # 영수증 튜플
-#         my_receipt.user = User(username=serializers.username)
-#
-#         if serializers.is_Storage == 1:
-#             my_receipt.is_Storage = 1
-#
-#         my_receipt.save()
+# Error :  django.db.utils.IntegrityError: (1048, "Column 'user_id' cannot be null") 에러가 나서 해결 해야됨;;; 
+class CheckUser(generics.GenericAPIView):
+    serializer_class = CheckUserSerializer
 
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            check_data = serializer.save()
+
+            my_receipt = Receipt.objects.get(id=check_data.id)      # 영수증 튜플
+            my_receipt.user_id = self.get_user_id(check_data.username)
+
+        if serializers.is_Storage == 1:                         # 저장 유무
+            my_receipt.is_Storage = 1
+
+        my_receipt.save()
+
+        return my_receipt.receipt_img_url
+
+    # 사용자의 고유 id를 반환하는 함수
+    def get_user_id(self, username):
+        user_id = User.objects.get(username=username).id
+        print(user_id)
+        return user_id
 
 
 # @api_view(['GET'])
@@ -191,47 +233,6 @@ class UploadIMG(generics.GenericAPIView):
 #         my_receipt.is_Storage = 1
 #
 #     my_receipt.save()
-
-
-# GCS 연결 관련 함수들
-# 스토리지 연결 테스트용 함수
-def check_link_gcs():
-    storage_client = storage.Client()
-    buckets = list(storage_client.list_buckets())
-    print(buckets)
-
-
-# 스토리지 파일 업로드 함수
-def upload_file_gcs(file_name, destination_blob_name, bucket_name='dsc_ereceipt_storage'):
-    # file_name : 업로드할 파일명
-    # destination_blob_name : 업로드될 경로와 파일명
-    # bucket_name : 업로드할 버킷명
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-
-    blob.upload_from_file(file_name)
-
-    print(
-        "File {} uploaded to {}".format(
-            file_name, destination_blob_name
-        )
-    )
-
-
-# 스토리지에 업로드된 파일의 링크url을 가져오는 함수
-def get_linkurl_gcs(blob_name, bucket_name='dsc_ereceipt_storage'):
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-
-    print(
-        "Blob {}'s url : {}".format(
-            blob_name, blob.public_url
-        )
-    )
-
-    return blob.public_url
 
 
 # 선택한 날짜와 시간의 맞는 영수증 이미지

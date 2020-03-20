@@ -56,17 +56,16 @@ class ImageCacheSerializer(serializers.ModelSerializer):
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('id', 'receipt_img_url', 'user', 'is_Storage')
+        fields = ('id', 'receipt_img_url', 'is_Storage', 'user_id')
 
         def update(self, validated_data):
             receipt = Receipt.objects.update(
-                id=validated_data["id"],
-                receipt_img_url=validated_data["receipt_img_url"],
-                user=validated_data["username"],
-                is_Storage=validated_data["is_Storage"]
+                id=validated_data["id"],                            # 영수증의 id
+                receipt_img_url=validated_data["receipt_img_url"],  # return용
+                is_Storage=validated_data["is_Storage"],
+                user_id=validated_data["user_id"],                  # user의 id
             )
             return receipt
-
 
 
 # 서버에서 받아온 영수증주소 투플생성
