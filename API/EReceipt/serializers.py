@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from .models import Receipt, Qrcodes, ImageCache
 
 
-# 회원가입
+# 회원가입정(확정)
 class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -20,14 +20,14 @@ class SignupSerializer(serializers.ModelSerializer):
         return user
 
 
-# 접속 유지중인가 확인
+# 접속 유지중인가 확인(확정)
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
 
 
-# 로그인
+# 로그인(확정)
 class SigninSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
@@ -39,7 +39,7 @@ class SigninSerializer(serializers.Serializer):
         raise serializers.ValidationError("Unable to log in with provided credentials.")
 
 
-# 서버로 보내기전 잠시 저장할 영수증이미지 생성
+# 서버로 보내기전 잠시 저장할 영수증이미지 생성 (확정)
 class ImageCacheSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageCache
@@ -53,7 +53,7 @@ class ImageCacheSerializer(serializers.ModelSerializer):
             return image
 
 
-# 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저
+# 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저(확정)
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt

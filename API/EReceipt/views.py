@@ -21,7 +21,7 @@ from .models import Receipt, Qrcodes, ImageCache
 from .serializers import *
 
 
-# 회원가입
+# 회원가입(확정)
 class SignupAPI(generics.GenericAPIView):
     serializer_class = SignupSerializer
 
@@ -42,7 +42,7 @@ class SignupAPI(generics.GenericAPIView):
         )
 
 
-# 로그인
+# 로그인(확정)
 class SigninAPI(generics.GenericAPIView):
     serializer_class = SigninSerializer
 
@@ -69,62 +69,7 @@ class UserAPI(generics.RetrieveAPIView):
         return self.request.user
 
 
-# QR리딩 후 영수증 이미지 반환
-@api_view(['GET'])
-def ReturnImg(request):
-    return Response('Return Img after QR Reading')
-
-
-# 목록 반환
-@api_view(['GET'])
-def ReturnList(request, user):
-    # now_person = Receipt.objects.get(user=user)
-    # serializer = GetListSerializer(now_person)
-    return Response('id : {}, Return List'.format(user))
-
-
-# 선택한 목록의 영수증 이미지 반환
-@api_view(['GET'])
-def ReturnItemImg(request):
-    return Response('Return Img when request Item')
-
-
-class NewQrcodes(generics.GenericAPIView):
-    serializer_class = NewQrcodesSerializer
-
-
-# 영수증 전체 목록 가져오기
-class ReturnReceiptImgList(mixins.ListModelMixin,
-                           mixins.CreateModelMixin,
-                           generics.GenericAPIView):
-    queryset = Receipt.objects.all()
-    serializer_class = ReceiptListSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
-
-# 디바이스에서 받아온 영수증 투플생성
-class NewReceiptURL(generics.GenericAPIView):
-    serializer_class = NewReceiptURLSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        receipt = serializer.save()
-        return Response(
-            {
-                "receipt": NewReceiptURLSerializer(
-                    receipt, context=self.get_serializer_context()
-                ).data
-            }
-        )
-
-
-# 서버로 보내기전 잠시 저장할 영수증이미지 생성
+# 서버로 보내기전 잠시 저장할 영수증이미지 생성(확정)
 class UploadIMG(generics.GenericAPIView):
     serializer_class = ImageCacheSerializer  # 이미지를 스토리지로 넘기기전에 잠시 저장해두는 시리얼라이저
 
@@ -196,7 +141,7 @@ class UploadIMG(generics.GenericAPIView):
         return blob.public_url
 
 
-# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
+# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
