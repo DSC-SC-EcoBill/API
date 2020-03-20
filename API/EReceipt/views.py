@@ -9,6 +9,8 @@ from rest_framework.decorators import api_view
 from knox.models import AuthToken
 from rest_framework import mixins
 from rest_framework import generics
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 # Google cloud platform
 from google.cloud import storage
@@ -93,18 +95,12 @@ class NewQrcodes(generics.GenericAPIView):
     serializer_class = NewQrcodesSerializer
 
 
-# 영수증 전체 목록 가져오기
-class ReturnReceiptImgList(mixins.ListModelMixin,
-                           mixins.CreateModelMixin,
-                           generics.GenericAPIView):
+# 사용자 영수증 전체 목록 가져오기
+class ReturnReceiptImgList(generics.ListAPIView):
     queryset = Receipt.objects.all()
-    serializer_class = ReceiptListSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+    serializer_class = ReceiptDateSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['user']
 
 
 # 디바이스에서 받아온 영수증 투플생성
