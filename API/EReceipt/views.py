@@ -23,7 +23,7 @@ from .models import Receipt, Qrcodes, ImageCache
 from .serializers import *
 
 
-# 회원가입
+# 회원가입(확정)
 class SignupAPI(generics.GenericAPIView):
     serializer_class = SignupSerializer
 
@@ -44,7 +44,7 @@ class SignupAPI(generics.GenericAPIView):
         )
 
 
-# 로그인
+# 로그인(확정)
 class SigninAPI(generics.GenericAPIView):
     serializer_class = SigninSerializer
 
@@ -120,7 +120,7 @@ class NewReceiptURL(generics.GenericAPIView):
         )
 
 
-# 서버로 보내기전 잠시 저장할 영수증이미지 생성
+# 서버로 보내기전 잠시 저장할 영수증이미지 생성(확정)
 class UploadIMG(generics.GenericAPIView):
     serializer_class = ImageCacheSerializer  # 이미지를 스토리지로 넘기기전에 잠시 저장해두는 시리얼라이저
 
@@ -192,7 +192,7 @@ class UploadIMG(generics.GenericAPIView):
         return blob.public_url
 
 
-# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
+# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
