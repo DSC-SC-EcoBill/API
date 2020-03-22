@@ -25,3 +25,10 @@ class ImageCache(models.Model):
     image_name = models.CharField(max_length=20, default='')
     image = models.ImageField(default='default_img.jpg')
 
+
+# 확인 코드를 저장하는 모델
+class VerifyCodes(models.Model):
+    email = models.EmailField()
+    verify_code = models.CharField(max_length=5)
+    date = models.DateTimeField(auto_now_add=True)
+

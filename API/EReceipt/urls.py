@@ -5,6 +5,8 @@ urlpatterns = [
     path('auth/signup/', SignupAPI.as_view()),
     path('auth/signin/', SigninAPI.as_view()),
 
+    path('main/searchpw/', SearchPW.as_view()),
+
     # 디바이스 to API, 영수증 이미지 올리는 url
     path('main/upload_img/', UploadIMG.as_view()),
     path('main/check_user_link/<int:creat_receipt_id>', CheckUser.as_view()),

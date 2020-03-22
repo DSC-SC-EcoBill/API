@@ -11,13 +11,20 @@ from rest_framework import mixins
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 
+# Gmail 발송
+import smtplib
+from email.mime.text import MIMEText
+
+# 난수 생성
+import random
+
 
 # Google cloud platform
 from google.cloud import storage
 
 
 # Models
-from .models import Receipt, Qrcodes, ImageCache
+from .models import Receipt, Qrcodes, ImageCache, VerifyCodes
 
 # Serializers
 from .serializers import *
@@ -69,6 +76,85 @@ class UserAPI(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+# 비밀번호 찾기
+class SearchPW(generics.GenericAPIView):
+    serializer_class = SearchPWSerializer
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            if request.data['verify_code'] == '':
+                # verify_code 테이블에 tuple 생성
+                verify_code = VerifyCodes(
+                    email=request.data['email'],
+                    verify_code=verify_code_generator()
+                )
+                verify_code.save()
+
+                first_name = User.objects.get(email=request.data['email']).first_name
+
+                subject = 'Did you ask your password from Ereceipt app?'
+                body = '''
+                Hello {}!!
+                We are Ereceipt team.
+                We send your verify code for search password.
+                If you doesn't request search password, please contact to us :)
+    
+                This is your verify code
+                {}
+    
+                Please write the code in your application.
+    
+                -------------------------
+                Thanks to use our Ereceipt service!
+                '''.format(first_name, verify_code.verify_code)
+                send_email(request.data['email'], subject, body)
+                return Response("send Email", status=status.HTTP_200_OK)
+
+            else:
+                # 인증코드가 맞은 경우
+                if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
+                    VerifyCodes.objects.get(email=request.data['email']).delete()
+                    return Response(
+                        {
+                            "password": User.objects.get(email=request.data['email']).last_name
+                        }
+                    )
+                else:
+                    return Response('Wrong code', status=status.HTTP_400_BAD_REQUEST)
+
+
+# Gmail을 보내는 함수
+def send_email(email, subject, body):
+    try:
+        session = smtplib.SMTP('smtp.gmail.com', 587)
+        session.starttls()
+        session.login('dev.ksanbal@gmail.com', 'jkybizzwutfgwstn')
+
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        session.sendmail('Ereceipt@gmail.com', email, msg.as_string())
+        print('successfully send email')
+
+    except Exception as ex:
+        print("Hey! ", ex)
+
+
+# 인증코드 생성기
+def verify_code_generator():
+    random_code = []
+
+    # 5자리 난수 생성
+    for _ in range(5):
+        random_code.append(str(random.randint(0,9)))
+
+    verify_code = ''.join(random_code)
+    print(verify_code)
+
+    return verify_code
 
 
 # QR리딩 후 영수증 이미지 반환
@@ -205,7 +291,11 @@ class CheckUser(generics.GenericAPIView):
 
             my_receipt.save()   # Tuple Update
 
-        return Response(my_receipt.receipt_img_url)
+        return Response(
+            {
+                'linkurl':  my_receipt.receipt_img_url
+            }
+        )
 
     # 사용자의 고유 id를 반환하는 함수
     def get_user_id(self, username):

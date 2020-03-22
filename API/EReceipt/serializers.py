@@ -4,17 +4,18 @@ from django.contrib.auth.models import User
 from .models import Receipt, Qrcodes, ImageCache
 
 
-# 회원가입정(확정)
+# 회원가입(확정)
 class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'first_name', 'email')
+        fields = ('id', 'username', 'password', 'first_name', 'last_name', 'email')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data["username"], password=validated_data["password"],
             first_name=validated_data["first_name"],
+            last_name=validated_data["last_name"],
             email=validated_data["email"]
         )
         return user
@@ -37,6 +38,12 @@ class SigninSerializer(serializers.Serializer):
         if user and user.is_active:
             return user
         raise serializers.ValidationError("Unable to log in with provided credentials.")
+
+
+class SearchPWSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', )
 
 
 # 서버로 보내기전 잠시 저장할 영수증이미지 생성 (확정)
