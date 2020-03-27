@@ -29,6 +29,11 @@ from .models import Receipt, Qrcodes, ImageCache, VerifyCodes
 # Serializers
 from .serializers import *
 
+# Database
+import datetime
+from dateutil.relativedelta import relativedelta
+
+
 
 # 회원가입(확정)
 class SignupAPI(generics.GenericAPIView):
@@ -183,11 +188,14 @@ class NewQrcodes(generics.GenericAPIView):
 
 # 사용자 영수증 전체 목록 가져오기
 class ReturnReceiptImgList(generics.ListAPIView):
-    queryset = Receipt.objects.all()
     serializer_class = ReceiptDateSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['user']
 
+    def get_queryset(self):
+        query = Receipt.objects.all()
+        user = self.request.query_params.get('user', None)
+        if user is not None:
+            queryset = query.filter(user=user)
+        return queryset
 
 # 디바이스에서 받아온 영수증 투플생성
 class NewReceiptURL(generics.GenericAPIView):
@@ -304,7 +312,45 @@ class CheckUser(generics.GenericAPIView):
         return user_id
 
 
-# 선택한 날짜와 시간의 맞는 영수증 이미지
-class ReceiptDate(generics.GenericAPIView):
+# 선택한 날짜 사이의 영수증 이미지
+class ReceiptDateSelect(generics.ListAPIView):
     serializer_class = ReceiptDateSerializer
 
+    def get_queryset(self, *args, **kwargs):
+        user = self.request.data['user']
+        s_date = self.request.data['s_date']
+        st_date = datetime.datetime.strptime(s_date, '%Y-%m-%d')
+        e_date = self.request.data['e_date']
+        en_date = datetime.datetime.strptime(e_date, '%Y-%m-%d')
+        date_format = "%Y-%m-%d"
+        start_date = st_date.strftime(date_format)
+        end_date = (en_date + datetime.timedelta(days=1)).strftime(date_format)
+        queryset = Receipt.objects.filter(receipt_date__range=[start_date, end_date], user=user)
+        return queryset
+
+
+# 월별 영수증 이미지
+class ReceiptDate(generics.ListAPIView):
+    serializer_class = ReceiptDateSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        user = self.request.data['user']
+        months = self.request.data['months']
+        date_format = "%Y-%m-%d"
+        if months == "1":
+            months_ago = (datetime.datetime.now() - relativedelta(months=1)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
+            return queryset
+
+        elif months == "3":
+            months_ago = (datetime.datetime.now() - relativedelta(months=3)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
+            return queryset
+
+        elif months == "6":
+            months_ago = (datetime.datetime.now() - relativedelta(months=6)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
+            return queryset

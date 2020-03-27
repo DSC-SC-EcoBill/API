@@ -12,6 +12,9 @@ urlpatterns = [
     path('main/check_user_link/<int:creat_receipt_id>', CheckUser.as_view()),
 
     path('main/return_receipt_img_List/', ReturnReceiptImgList.as_view()),
-    # path('main/receipt_url/', NewReceiptURL.as_view()),
-    # path('main/receipt_date/', ReceiptDate.as_view()),
+    path('main/receipt_url/', NewReceiptURL.as_view()),
+
+    path('main/receipt_date/', ReceiptDate.as_view()),
+    path('main/receipt_date_select/', ReceiptDateSelect.as_view()),
 ]
+
