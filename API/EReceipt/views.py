@@ -8,7 +8,6 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from knox.models import AuthToken
 from rest_framework import mixins
-from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 
 # Gmail 발송
@@ -18,10 +17,8 @@ from email.mime.text import MIMEText
 # 난수 생성
 import random
 
-
 # Google cloud platform
 from google.cloud import storage
-
 
 # Models
 from .models import Receipt, Qrcodes, ImageCache, VerifyCodes
@@ -32,7 +29,6 @@ from .serializers import *
 # Database
 import datetime
 from dateutil.relativedelta import relativedelta
-
 
 
 # 회원가입(확정)
@@ -162,30 +158,6 @@ def verify_code_generator():
     return verify_code
 
 
-# QR리딩 후 영수증 이미지 반환
-@api_view(['GET'])
-def ReturnImg(request):
-    return Response('Return Img after QR Reading')
-
-
-# 목록 반환
-@api_view(['GET'])
-def ReturnList(request, user):
-    # now_person = Receipt.objects.get(user=user)
-    # serializer = GetListSerializer(now_person)
-    return Response('id : {}, Return List'.format(user))
-
-
-# 선택한 목록의 영수증 이미지 반환
-@api_view(['GET'])
-def ReturnItemImg(request):
-    return Response('Return Img when request Item')
-
-
-class NewQrcodes(generics.GenericAPIView):
-    serializer_class = NewQrcodesSerializer
-
-
 # 사용자 영수증 전체 목록 가져오기
 class ReturnReceiptImgList(generics.ListAPIView):
     serializer_class = ReceiptDateSerializer
@@ -196,6 +168,7 @@ class ReturnReceiptImgList(generics.ListAPIView):
         if user is not None:
             queryset = query.filter(user=user)
         return queryset
+
 
 # 디바이스에서 받아온 영수증 투플생성
 class NewReceiptURL(generics.GenericAPIView):
@@ -288,22 +261,42 @@ class UploadIMG(generics.GenericAPIView):
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
+# class CheckUser(generics.GenericAPIView):
+#     serializer_class = CheckUserSerializer
+#
+#     def get(self, request, creat_receipt_id, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid(raise_exception=True):
+#             my_receipt = Receipt.objects.get(id=creat_receipt_id)
+#             my_receipt.user_id = self.get_user_id(request.data['username'])
+#             my_receipt.save()   # Tuple Update
+#
+#         return Response(
+#             {
+#                 'linkurl':  my_receipt.receipt_img_url
+#             }
+#         )
+#
+#     # 사용자의 고유 id를 반환하는 함수
+#     def get_user_id(self, username):
+#         user_id = User.objects.get(username=username).id
+#         print(user_id)
+#         return user_id
+
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            my_receipt = Receipt.objects.get(id=request.data['id'])             # 영수증 튜플
-            my_receipt.user_id = self.get_user_id(request.data['username'])
+    def put(self, request, creat_receipt_id, *args, **kwargs):
+        user_id = self.get_user_id(request.data['username'])
+        input_data = {'user_id': user_id}
 
-            my_receipt.save()   # Tuple Update
+        receipt = Receipt.objects.get(id=creat_receipt_id)
 
-        return Response(
-            {
-                'linkurl':  my_receipt.receipt_img_url
-            }
-        )
+        serializer = CheckUserSerializer(receipt, data=input_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
 
     # 사용자의 고유 id를 반환하는 함수
     def get_user_id(self, username):
@@ -354,3 +347,22 @@ class ReceiptDate(generics.ListAPIView):
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
             return queryset
+
+
+# 테스트
+class Test(generics.GenericAPIView):
+    serializer_class = TestSerializer
+
+    # def post(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response("시발? ")
+
+    def put(self, request, *args, **kwargs):
+        code = VerifyCodes.objects.get(email=request.data['email'])
+        serializer = TestSerializer(code, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

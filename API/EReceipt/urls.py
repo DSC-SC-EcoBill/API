@@ -2,19 +2,23 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('auth/signup/', SignupAPI.as_view()),
-    path('auth/signin/', SigninAPI.as_view()),
+    path('auth/signup/', SignupAPI.as_view()),                                  # 회원가입
+    path('auth/signin/', SigninAPI.as_view()),                                  # 로그인
 
-    path('main/searchpw/', SearchPW.as_view()),
+    path('main/searchpw/', SearchPW.as_view()),                                 # 비밀번호 찾기
 
     # 디바이스 to API, 영수증 이미지 올리는 url
-    path('main/upload_img/', UploadIMG.as_view()),
-    path('main/check_user_link/<int:creat_receipt_id>', CheckUser.as_view()),
+    path('main/upload_img/', UploadIMG.as_view()),                              # 이미지 올리기
+    path('main/check_user_link/<int:creat_receipt_id>', CheckUser.as_view()),   # 유저확인하기
 
-    path('main/return_receipt_img_List/', ReturnReceiptImgList.as_view()),
     path('main/receipt_url/', NewReceiptURL.as_view()),
 
-    path('main/receipt_date/', ReceiptDate.as_view()),
-    path('main/receipt_date_select/', ReceiptDateSelect.as_view()),
+    # 영수증 리스트 반환
+    path('main/return_receipt_img_List/', ReturnReceiptImgList.as_view()),      # 전체 반환
+    path('main/receipt_date/', ReceiptDate.as_view()),                          # 개월 단위로 반환
+    path('main/receipt_date_select/', ReceiptDateSelect.as_view()),             # 지정한 날짜 단위로 반환
+
+    # 테스트용
+    path('main/test/', Test.as_view()),
 ]
 

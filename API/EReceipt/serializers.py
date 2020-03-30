@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Receipt, Qrcodes, ImageCache
+from .models import Receipt, Qrcodes, ImageCache, VerifyCodes
 
 
 # 회원가입(확정)
@@ -40,6 +40,7 @@ class SigninSerializer(serializers.Serializer):
         raise serializers.ValidationError("Unable to log in with provided credentials.")
 
 
+# 비밀번호 찾기
 class SearchPWSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -64,15 +65,12 @@ class ImageCacheSerializer(serializers.ModelSerializer):
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('id', 'receipt_img_url', 'is_Storage', 'user_id')
+        fields = ('id', 'user_id')
 
-        def update(self, validated_data):
-            receipt = Receipt.objects.update(
-                id=validated_data["id"],                            # 영수증의 id
-                receipt_img_url=validated_data["receipt_img_url"],  # return용
-                user_id=validated_data["user_id"]                   # user의 id
-            )
-            return receipt
+    # def update(self, instance, validated_data):
+    #     instance.user_id = validated_data.get('user_id', instance.user_id)
+    #     instance.save()
+    #     return instance
 
 
 # 서버에서 받아온 영수증주소 투플생성
@@ -118,3 +116,17 @@ class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
+
+
+# 테스트
+class TestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VerifyCodes
+        fields = ('email', 'verify_code')
+    #
+    # def create(self, validated_data):
+    #     test = VerifyCodes.objects.create(
+    #         email=validated_data['email'],
+    #         verify_code=validated_data['verify_code']
+    #     )
+    #     return test
