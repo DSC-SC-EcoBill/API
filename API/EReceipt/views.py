@@ -21,7 +21,7 @@ import random
 from google.cloud import storage
 
 # Models
-from .models import Receipt, Qrcodes, ImageCache, VerifyCodes
+from .models import Receipt, Qrcodes, VerifyCodes
 
 # Serializers
 from .serializers import *
