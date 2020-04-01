@@ -40,32 +40,25 @@ class SigninSerializer(serializers.Serializer):
         raise serializers.ValidationError("Unable to log in with provided credentials.")
 
 
-# 비밀번호 찾기
+# 비밀번호 찾기(확정)
 class SearchPWSerializer(serializers.ModelSerializer):
     class Meta:
         model = VerifyCodes
         fields = ('email', 'verify_code')
 
 
-# 비밀번호 with 인증코드
+# 비밀번호 with 인증코드(확정)
 class SearchPWSerializerVerify(serializers.ModelSerializer):
     class Meta:
         model = VerifyCodes
         fields = ('email', 'verify_code')
 
 
-# 서버로 보내기전 잠시 저장할 영수증이미지 생성 (확정)
-class ImageCacheSerializer(serializers.ModelSerializer):
+# 영수증 tuple을 생성하는 시리얼라이저
+class CreateReceiptTupleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ImageCache
-        fields = ('id', 'upload_data', 'device_id', 'image_name', 'image')
-
-        def create(self, validated_data):
-            image = ImageCache.objects.create(
-                upload_data=validated_data["upload_data"],
-                image=validated_data["image"]
-            )
-            return image
+        model = Receipt
+        fields = ('receipt_img_url', 'device_id')
 
 
 # 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저(확정)

@@ -8,8 +8,10 @@ urlpatterns = [
     path('main/searchpw/', SearchPW.as_view()),                                 # 비밀번호 찾기
     path('main/searchpwcode/', SearchPWCode.as_view()),                         # 비밀번호 찾기 with 인증코드
 
-    # 디바이스 to API, 영수증 이미지 올리는 url
-    path('main/upload_img/', UploadIMG.as_view()),                              # 이미지 올리기
+    # 디바이스 to API, 영수증 튜플 생성
+    path('main/upload_img/', CreateReceiptTuple.as_view()),                     # 영수증 튜플 생성
+
+
     path('main/check_user_link/<int:creat_receipt_id>', CheckUser.as_view()),   # 유저확인하기
 
     path('main/receipt_url/', NewReceiptURL.as_view()),
