@@ -91,7 +91,7 @@ class SearchPW(generics.GenericAPIView):
                 # verify_code 테이블에 tuple 생성
                 verify_code = VerifyCodes(
                     email=request.data['email'],
-                    verify_code=verify_code_generator()
+                    verify_code=self.verify_code_generator()
                 )
                 verify_code.save()
 
@@ -112,7 +112,7 @@ class SearchPW(generics.GenericAPIView):
                 -------------------------
                 Thanks to use our Ereceipt service!
                 '''.format(first_name, verify_code.verify_code)
-                send_email(request.data['email'], subject, body)
+                self.send_email(request.data['email'], subject, body)
                 return Response("send Email", status=status.HTTP_200_OK)
 
             else:
@@ -127,35 +127,33 @@ class SearchPW(generics.GenericAPIView):
                 else:
                     return Response('Wrong code', status=status.HTTP_400_BAD_REQUEST)
 
+    # Gmail을 보내는 함수
+    def send_email(self, email, subject, body):
+        try:
+            session = smtplib.SMTP('smtp.gmail.com', 587)
+            session.starttls()
+            session.login('dev.ksanbal@gmail.com', 'jkybizzwutfgwstn')
 
-# Gmail을 보내는 함수
-def send_email(email, subject, body):
-    try:
-        session = smtplib.SMTP('smtp.gmail.com', 587)
-        session.starttls()
-        session.login('dev.ksanbal@gmail.com', 'jkybizzwutfgwstn')
+            msg = MIMEText(body)
+            msg['Subject'] = subject
+            session.sendmail('Ereceipt@gmail.com', email, msg.as_string())
+            print('successfully send email')
 
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        session.sendmail('Ereceipt@gmail.com', email, msg.as_string())
-        print('successfully send email')
+        except Exception as ex:
+            print("Hey! ", ex)
 
-    except Exception as ex:
-        print("Hey! ", ex)
+    # 인증코드 생성기
+    def verify_code_generator(self):
+        random_code = []
 
+        # 5자리 난수 생성
+        for _ in range(5):
+            random_code.append(str(random.randint(0, 9)))
 
-# 인증코드 생성기
-def verify_code_generator():
-    random_code = []
+        verify_code = ''.join(random_code)
+        print(verify_code)
 
-    # 5자리 난수 생성
-    for _ in range(5):
-        random_code.append(str(random.randint(0,9)))
-
-    verify_code = ''.join(random_code)
-    print(verify_code)
-
-    return verify_code
+        return verify_code
 
 
 # 사용자 영수증 전체 목록 가져오기
@@ -261,47 +259,23 @@ class UploadIMG(generics.GenericAPIView):
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
-# class CheckUser(generics.GenericAPIView):
-#     serializer_class = CheckUserSerializer
-#
-#     def get(self, request, creat_receipt_id, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         if serializer.is_valid(raise_exception=True):
-#             my_receipt = Receipt.objects.get(id=creat_receipt_id)
-#             my_receipt.user_id = self.get_user_id(request.data['username'])
-#             my_receipt.save()   # Tuple Update
-#
-#         return Response(
-#             {
-#                 'linkurl':  my_receipt.receipt_img_url
-#             }
-#         )
-#
-#     # 사용자의 고유 id를 반환하는 함수
-#     def get_user_id(self, username):
-#         user_id = User.objects.get(username=username).id
-#         print(user_id)
-#         return user_id
-
-class CheckUser(generics.GenericAPIView):
+class CheckUser(APIView):
     serializer_class = CheckUserSerializer
 
     def put(self, request, creat_receipt_id, *args, **kwargs):
-        user_id = self.get_user_id(request.data['username'])
-        input_data = {'user_id': user_id}
+        input_data = {"user": self.get_user_id(request.data["username"])}
 
         receipt = Receipt.objects.get(id=creat_receipt_id)
-
         serializer = CheckUserSerializer(receipt, data=input_data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # 사용자의 고유 id를 반환하는 함수
     def get_user_id(self, username):
         user_id = User.objects.get(username=username).id
-        print(user_id)
         return user_id
 
 

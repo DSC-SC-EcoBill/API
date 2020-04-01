@@ -65,7 +65,7 @@ class ImageCacheSerializer(serializers.ModelSerializer):
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('id', 'user_id')
+        fields = ('user',)
 
     # def update(self, instance, validated_data):
     #     instance.user_id = validated_data.get('user_id', instance.user_id)
