@@ -84,44 +84,35 @@ class SearchPW(generics.GenericAPIView):
     serializer_class = SearchPWSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = SearchPWSerializer(data=request.data)
+        input_data = {'email': request.data['email'], 'verify_code': self.verify_code_generator()}
+        serializer = SearchPWSerializer(data=input_data)
 
         if serializer.is_valid():
-            if request.data['verify_code'] == '':
-                # verify_code 테이블에 tuple 생성
-                serializer.save()
+            # verify_code 테이블에 tuple 생성
 
-                # 이메일 작성
-                first_name = User.objects.get(email=request.data['email']).first_name
-                subject = 'Did you ask your password from Ereceipt app?'
-                body = '''
-                Hello {}!!
-                We are Ereceipt team.
-                We send your verify code for search password.
-                If you doesn't request search password, please contact to us :)
-    
-                This is your verify code
-                {}
-    
-                Please write the code in your application.
-    
-                -------------------------
-                Thanks to use our Ereceipt service!
-                '''.format(first_name, serializer.verify_code)
-                self.send_email(request.data['email'], subject, body)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
 
-            else:
-                # 인증코드가 맞은 경우
-                if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
-                    VerifyCodes.objects.get(email=request.data['email']).delete()
-                    return Response(
-                        {
-                            "password": User.objects.get(email=request.data['email']).last_name
-                        }
-                    )
-                else:
-                    return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            # 이메일 작성
+            first_name = User.objects.get(email=request.data['email']).first_name
+            subject = 'Did you ask your password from Ereceipt app?'
+            body = '''
+            Hello {}!!
+            We are Ereceipt team.
+            We send your verify code for search password.
+            If you doesn't request search password, please contact to us :)
+
+            This is your verify code
+            {}
+
+            Please write the code in your application.
+
+            -------------------------
+            Thanks to use our Ereceipt service!
+            '''.format(first_name, input_data['verify_code'])
+            self.send_email(request.data['email'], subject, body)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     # Gmail을 보내는 함수
     def send_email(self, email, subject, body):
@@ -150,6 +141,24 @@ class SearchPW(generics.GenericAPIView):
         print(verify_code)
 
         return verify_code
+
+
+# 비밀번호 찾기 with 인증코드
+class SearchPWCode(generics.GenericAPIView):
+    serializer_class = SearchPWSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = SearchPWSerializer(data=request.data)
+
+        if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
+            VerifyCodes.objects.get(email=request.data['email']).delete()
+            return Response(
+                {
+                    "password": User.objects.get(email=request.data['email']).last_name
+                }
+            )
+        else:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 사용자 영수증 전체 목록 가져오기

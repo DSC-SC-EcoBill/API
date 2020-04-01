@@ -6,6 +6,7 @@ urlpatterns = [
     path('auth/signin/', SigninAPI.as_view()),                                  # 로그인
 
     path('main/searchpw/', SearchPW.as_view()),                                 # 비밀번호 찾기
+    path('main/searchpwcode/', SearchPWCode.as_view()),                         # 비밀번호 찾기 with 인증코드
 
     # 디바이스 to API, 영수증 이미지 올리는 url
     path('main/upload_img/', UploadIMG.as_view()),                              # 이미지 올리기

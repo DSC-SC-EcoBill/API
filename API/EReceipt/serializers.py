@@ -47,6 +47,13 @@ class SearchPWSerializer(serializers.ModelSerializer):
         fields = ('email', 'verify_code')
 
 
+# 비밀번호 with 인증코드
+class SearchPWSerializerVerify(serializers.ModelSerializer):
+    class Meta:
+        model = VerifyCodes
+        fields = ('email', 'verify_code')
+
+
 # 서버로 보내기전 잠시 저장할 영수증이미지 생성 (확정)
 class ImageCacheSerializer(serializers.ModelSerializer):
     class Meta:
