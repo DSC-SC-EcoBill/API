@@ -83,20 +83,16 @@ class UserAPI(generics.RetrieveAPIView):
 class SearchPW(generics.GenericAPIView):
     serializer_class = SearchPWSerializer
 
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request, *args, **kwargs):
+        serializer = SearchPWSerializer(data=request.data)
 
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             if request.data['verify_code'] == '':
                 # verify_code 테이블에 tuple 생성
-                verify_code = VerifyCodes(
-                    email=request.data['email'],
-                    verify_code=self.verify_code_generator()
-                )
-                verify_code.save()
+                serializer.save()
 
+                # 이메일 작성
                 first_name = User.objects.get(email=request.data['email']).first_name
-
                 subject = 'Did you ask your password from Ereceipt app?'
                 body = '''
                 Hello {}!!
@@ -111,9 +107,9 @@ class SearchPW(generics.GenericAPIView):
     
                 -------------------------
                 Thanks to use our Ereceipt service!
-                '''.format(first_name, verify_code.verify_code)
+                '''.format(first_name, serializer.verify_code)
                 self.send_email(request.data['email'], subject, body)
-                return Response("send Email", status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             else:
                 # 인증코드가 맞은 경우
@@ -125,7 +121,7 @@ class SearchPW(generics.GenericAPIView):
                         }
                     )
                 else:
-                    return Response('Wrong code', status=status.HTTP_400_BAD_REQUEST)
+                    return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     # Gmail을 보내는 함수
     def send_email(self, email, subject, body):
@@ -259,7 +255,7 @@ class UploadIMG(generics.GenericAPIView):
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
 # 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
-class CheckUser(APIView):
+class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
     def put(self, request, creat_receipt_id, *args, **kwargs):
@@ -321,22 +317,3 @@ class ReceiptDate(generics.ListAPIView):
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
             return queryset
-
-
-# 테스트
-class Test(generics.GenericAPIView):
-    serializer_class = TestSerializer
-
-    # def post(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #     return Response("시발? ")
-
-    def put(self, request, *args, **kwargs):
-        code = VerifyCodes.objects.get(email=request.data['email'])
-        serializer = TestSerializer(code, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

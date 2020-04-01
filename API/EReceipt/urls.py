@@ -17,8 +17,5 @@ urlpatterns = [
     path('main/return_receipt_img_List/', ReturnReceiptImgList.as_view()),      # 전체 반환
     path('main/receipt_date/', ReceiptDate.as_view()),                          # 개월 단위로 반환
     path('main/receipt_date_select/', ReceiptDateSelect.as_view()),             # 지정한 날짜 단위로 반환
-
-    # 테스트용
-    path('main/test/', Test.as_view()),
 ]
 

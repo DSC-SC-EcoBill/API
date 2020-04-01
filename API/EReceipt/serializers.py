@@ -43,8 +43,8 @@ class SigninSerializer(serializers.Serializer):
 # 비밀번호 찾기
 class SearchPWSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('email', )
+        model = VerifyCodes
+        fields = ('email', 'verify_code')
 
 
 # 서버로 보내기전 잠시 저장할 영수증이미지 생성 (확정)
@@ -116,17 +116,3 @@ class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
-
-
-# 테스트
-class TestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VerifyCodes
-        fields = ('email', 'verify_code')
-    #
-    # def create(self, validated_data):
-    #     test = VerifyCodes.objects.create(
-    #         email=validated_data['email'],
-    #         verify_code=validated_data['verify_code']
-    #     )
-    #     return test
