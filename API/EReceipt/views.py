@@ -198,7 +198,7 @@ class CreateReceiptTuple(generics.GenericAPIView):
         if serializer.is_valid():
             serializer.save()
             receipt_id = Receipt.objects.get(receipt_img_url=request.data['receipt_img_url']).id
-            return_url = 'http://127.0.0.1:8000/api/main/check_user_link/{}'.format(receipt_id)
+            return_url = 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(receipt_id)
             return Response(return_url, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
