@@ -11,7 +11,6 @@ urlpatterns = [
     # 디바이스 to API, 영수증 튜플 생성
     path('main/upload_img/', CreateReceiptTuple.as_view()),                     # 영수증 튜플 생성
 
-
     path('main/check_user_link/<int:creat_receipt_id>', CheckUser.as_view()),   # 유저확인하기
 
     path('main/receipt_url/', NewReceiptURL.as_view()),

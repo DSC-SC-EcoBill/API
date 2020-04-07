@@ -204,7 +204,6 @@ class CreateReceiptTuple(generics.GenericAPIView):
 
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
-# 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
@@ -216,7 +215,8 @@ class CheckUser(generics.GenericAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            linkurl = receipt.receipt_img_url
+            return Response(linkurl)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # 사용자의 고유 id를 반환하는 함수
