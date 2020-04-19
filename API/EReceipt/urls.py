@@ -12,6 +12,7 @@ urlpatterns = [
     path('main/upload_img/', CreateReceiptTuple.as_view()),                     # 영수증 튜플 생성
 
     path('main/check_user_link/<int:creat_receipt_id>/', CheckUser.as_view()),   # 유저확인하기
+    path('main/check_user_device_id/<str:req_device_id>/', CheckUserWithDeviceId.as_view()),        # 고정 QR코드로 유저확인하기
 
     path('main/receipt_url/', NewReceiptURL.as_view()),
 

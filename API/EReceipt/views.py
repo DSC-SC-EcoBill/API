@@ -231,6 +231,31 @@ class CheckUser(generics.GenericAPIView):
         return user_id
 
 
+# device 코드가 있는 고정 QR코드에 접속했을때 실행
+class CheckUserWithDeviceId(generics.GenericAPIView):
+    serializer_class = CheckUserSerializer
+
+    def put(self, request, req_device_id):
+        request_username = request.data['username']     # 요청한 user의 username
+        request_userid = self.get_user_id(request_username)     # 요청한 user의 id
+        input_data = {"user": request_userid}
+
+        query = Receipt.objects.all()
+        receipt = query.filter(device_id=req_device_id, user=1).last()
+        print(receipt)
+
+        serializer = CheckUserSerializer(receipt, data=input_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_user_id(self, username):
+        user_id = User.objects.get(username=username).id
+        return user_id
+
+
 # 선택한 날짜 사이의 영수증 이미지
 class ReceiptDateSelect(generics.ListAPIView):
     serializer_class = ReceiptDateSerializer

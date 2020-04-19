@@ -65,12 +65,7 @@ class CreateReceiptTupleSerializer(serializers.ModelSerializer):
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('user',)
-
-    # def update(self, instance, validated_data):
-    #     instance.user_id = validated_data.get('user_id', instance.user_id)
-    #     instance.save()
-    #     return instance
+        fields = '__all__'
 
 
 # 서버에서 받아온 영수증주소 투플생성
