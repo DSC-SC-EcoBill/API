@@ -160,15 +160,21 @@ class SearchPWCode(generics.GenericAPIView):
 
 
 # 사용자 영수증 전체 목록 가져오기
-class ReturnReceiptImgList(generics.ListAPIView):
+class ReturnReceiptImgList(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
 
-    def get_queryset(self):
+    # def get_queryset(self):
+    #     query = Receipt.objects.all()
+    #     user = self.request.query_params.get('user', None)
+    #     if user is not None:
+    #         queryset = query.filter(user=user)
+    #     return queryset
+
+    def get(self, request, req_username, *args, **kwargs):
         query = Receipt.objects.all()
-        user = self.request.query_params.get('user', None)
-        if user is not None:
-            queryset = query.filter(user=user)
-        return queryset
+        user = query.filter(user=User.objects.get(username=req_username))
+        serializer = ReceiptDateSerializer(user)    # 여기가 오류나는 부분;;;; 값 하나만 보내는건 되는데 리스트로는 불가능한거 같아
+        return Response(req_username)
 
 
 # 디바이스에서 받아온 영수증 투플생성
@@ -267,3 +273,12 @@ class ReceiptDate(generics.ListAPIView):
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
             return queryset
+
+
+class TestView(APIView):
+    serializer_class = TestSerializer()
+
+    def get(self, request, format=None):
+        users = User.objects.all()
+        serializer = TestSerializer(users, many=True)
+        return Response(serializer.data)
