@@ -149,14 +149,27 @@ class SearchPWCode(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = SearchPWSerializer(data=request.data)
 
-        if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
-            VerifyCodes.objects.get(email=request.data['email']).delete()
-            return Response(
-                {
-                    "password": User.objects.get(email=request.data['email']).last_name
-                }
-            )
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        # 가장 최신의 인증코드가 있는 테이블
+        query = VerifyCodes.objects.all()
+        last_verifycode = query.filter(email=request.data['email']).last()
+
+        if serializer.is_valid():
+            if last_verifycode.verify_code == request.data['verify_code']:
+                last_verifycode.delete()
+                return Response(
+                    {
+                        "password": User.objects.get(email=request.data['email']).last_name
+                    }, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
+        #     # VerifyCodes.objects.get(email=request.data['email']).delete()
+        #     return Response(
+        #         {
+        #             "password": User.objects.get(email=request.data['email']).last_name
+        #         }
+        #     )
+        # return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 사용자 영수증 전체 목록 가져오기
