@@ -72,6 +72,7 @@ class SigninAPI(generics.GenericAPIView):
                     user, context=self.get_serializer_context()
                 ).data,
                 "token": AuthToken.objects.create(user)[1],
+                "countreceipt": Receipt.objects.all().last().id,
             }
         )
 
@@ -235,6 +236,17 @@ class CheckUserWithDeviceId(generics.GenericAPIView):
     def get_user_id(self, username):
         user_id = User.objects.get(username=username).id
         return user_id
+
+
+# 영수증 삭제
+class DeleteReceipt(generics.DestroyAPIView):
+    def delete(self, request, target_id, *args, **kwargs):
+        target = Receipt.objects.get(id=target_id)
+        try:
+            target.delete()
+            return Response('Success', status=status.HTTP_202_ACCEPTED)
+        except Exception as ex:
+            return Response('Error :', ex, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 영수증 리스트 반환
