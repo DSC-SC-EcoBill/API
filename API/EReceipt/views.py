@@ -162,32 +162,24 @@ class SearchPWCode(generics.GenericAPIView):
                     }, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
-        #     # VerifyCodes.objects.get(email=request.data['email']).delete()
-        #     return Response(
-        #         {
-        #             "password": User.objects.get(email=request.data['email']).last_name
-        #         }
-        #     )
-        # return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+# 비밀번호 재설정
+class UpdatePW(generics.GenericAPIView):
+    pass
 
 
 # 사용자 영수증 전체 목록 가져오기
 class ReturnReceiptImgList(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
-
-    # def get_queryset(self):
-    #     query = Receipt.objects.all()
-    #     user = self.request.query_params.get('user', None)
-    #     if user is not None:
-    #         queryset = query.filter(user=user)
-    #     return queryset
+    queryset = Receipt.objects.all()
 
     def get(self, request, req_username, *args, **kwargs):
-        query = Receipt.objects.all()
-        user = query.filter(user=User.objects.get(username=req_username))
-        serializer = ReceiptDateSerializer(user)    # 여기가 오류나는 부분;;;; 값 하나만 보내는건 되는데 리스트로는 불가능한거 같아
-        return Response(req_username)
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            serializer = ReceiptDateSerializer(user, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 디바이스에서 받아온 영수증 투플생성
