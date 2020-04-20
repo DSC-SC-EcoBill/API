@@ -23,6 +23,3 @@ urlpatterns = [
     path('api/', include('EReceipt.urls')),
     path('api/auth', include('knox.urls'))
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

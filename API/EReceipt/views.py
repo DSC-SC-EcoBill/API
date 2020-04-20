@@ -21,7 +21,7 @@ import random
 from google.cloud import storage
 
 # Models
-from .models import Receipt, Qrcodes, ImageCache, VerifyCodes
+from .models import Receipt, Qrcodes, VerifyCodes
 
 # Serializers
 from .serializers import *
@@ -111,8 +111,7 @@ class SearchPW(generics.GenericAPIView):
             '''.format(first_name, input_data['verify_code'])
             self.send_email(request.data['email'], subject, body)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     # Gmail을 보내는 함수
     def send_email(self, email, subject, body):
@@ -150,20 +149,37 @@ class SearchPWCode(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = SearchPWSerializer(data=request.data)
 
-        if VerifyCodes.objects.get(email=request.data['email']).verify_code == request.data['verify_code']:
-            VerifyCodes.objects.get(email=request.data['email']).delete()
-            return Response(
-                {
-                    "password": User.objects.get(email=request.data['email']).last_name
-                }
-            )
-        else:
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        # 가장 최신의 인증코드가 있는 테이블
+        query = VerifyCodes.objects.all()
+        last_verifycode = query.filter(email=request.data['email']).last()
+
+        if serializer.is_valid():
+            if last_verifycode.verify_code == request.data['verify_code']:
+                last_verifycode.delete()
+                return Response(
+                    {
+                        "password": User.objects.get(email=request.data['email']).last_name
+                    }, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 비밀번호 재설정
+class UpdatePW(generics.GenericAPIView):
+    pass
 
 
 # 사용자 영수증 전체 목록 가져오기
-class ReturnReceiptImgList(generics.ListAPIView):
+class ReturnReceiptImgList(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
 
+    def get(self, request, req_username, *args, **kwargs):
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            serializer = ReceiptDateSerializer(user, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 디바이스에서 받아온 영수증 투플생성
@@ -183,80 +199,22 @@ class NewReceiptURL(generics.GenericAPIView):
         )
 
 
-# 서버로 보내기전 잠시 저장할 영수증이미지 생성(확정)
-class UploadIMG(generics.GenericAPIView):
-    serializer_class = ImageCacheSerializer  # 이미지를 스토리지로 넘기기전에 잠시 저장해두는 시리얼라이저
+# 영수증 튜플 생성
+class CreateReceiptTuple(generics.GenericAPIView):
+    serializer_class = CreateReceiptTupleSerializer
 
     def post(self, request, *args, **kwargs):
-        # request로 올라온 이미지를 임시저장 테이블에 저장
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            img_data = serializer.save()
+        serializer = CreateReceiptTupleSerializer(data=request.data)
 
-        # DB의 이미지 데이터 가져오기
-        cache_img = ImageCache.objects.get(id=img_data.id, device_id=img_data.device_id)    # 업로드할 튜플
-        file_name = cache_img.image                                                         # 업로드할 이미지의 파일 객체
-        blob_name = 'receipts/{}.jpg'.format(cache_img.image_name)                          # 업로드할 이미지의 gcs 경로
-
-        # gcs에 이미지 업로드 요청
-        try:
-            self.upload_file_gcs(file_name, blob_name)
-        except Exception as ex:
-            print('Hey! : ', ex)
-
-        # gcs에 저장된 이미지의 link url 반환 요청
-        try:
-            link_url = self.get_linkurl_gcs(blob_name)
-        except Exception as ex:
-            print('Hey!: ', ex)
-
-        # 받은 link url을 이용해 Receipt Tuple 생성
-        dummy_user = User(id=1)
-        new_receipt = Receipt(
-            receipt_img_url=link_url,
-            device_id=img_data.device_id,
-            user=dummy_user
-        )
-        new_receipt.save()
-
-        # 사용자를 확인할 수 있는 임의의 url 생성 후 반환
-        check_user_link = 'http://127.0.0.1:8000/api/main/check_user_link/{}'.format(new_receipt.id)
-        return Response(check_user_link)
-
-    # 스토리지 파일 업로드 함수
-    def upload_file_gcs(self, file_name, destination_blob_name, bucket_name='dsc_ereceipt_storage'):
-        # file_name : 업로드할 파일명
-        # destination_blob_name : 업로드될 경로와 파일명
-        # bucket_name : 업로드할 버킷명
-        storage_client = storage.Client()
-        bucket = storage_client.get_bucket(bucket_name)
-        blob = bucket.blob(destination_blob_name)
-
-        blob.upload_from_file(file_name)
-
-        print(
-            "File {} uploaded to {}".format(
-                file_name, destination_blob_name
-            )
-        )
-
-    # 스토리지에 업로드된 파일의 링크url을 가져오는 함수
-    def get_linkurl_gcs(self, blob_name, bucket_name='dsc_ereceipt_storage'):
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(blob_name)
-
-        print(
-            "Blob {}'s url : {}".format(
-                blob_name, blob.public_url
-            )
-        )
-
-        return blob.public_url
+        if serializer.is_valid():
+            serializer.save()
+            receipt_id = Receipt.objects.get(receipt_img_url=request.data['receipt_img_url']).id
+            return_url = 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(receipt_id)
+            return Response(return_url, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
-# 저장을 눌렀는지, 아닌지에 따라서 is_Storage 값을 변경
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
@@ -268,10 +226,36 @@ class CheckUser(generics.GenericAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            linkurl = receipt.receipt_img_url
+            return Response(linkurl)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # 사용자의 고유 id를 반환하는 함수
+    def get_user_id(self, username):
+        user_id = User.objects.get(username=username).id
+        return user_id
+
+
+# device 코드가 있는 고정 QR코드에 접속했을때 실행
+class CheckUserWithDeviceId(generics.GenericAPIView):
+    serializer_class = CheckUserSerializer
+
+    def put(self, request, req_device_id):
+        request_username = request.data['username']     # 요청한 user의 username
+        request_userid = self.get_user_id(request_username)     # 요청한 user의 id
+        input_data = {"user": request_userid}
+
+        query = Receipt.objects.all()
+        receipt = query.filter(device_id=req_device_id, user=1).last()
+        print(receipt)
+
+        serializer = CheckUserSerializer(receipt, data=input_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def get_user_id(self, username):
         user_id = User.objects.get(username=username).id
         return user_id
@@ -319,3 +303,12 @@ class ReceiptDate(generics.ListAPIView):
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
             return queryset
+
+
+class TestView(APIView):
+    serializer_class = TestSerializer()
+
+    def get(self, request, format=None):
+        users = User.objects.all()
+        serializer = TestSerializer(users, many=True)
+        return Response(serializer.data)
