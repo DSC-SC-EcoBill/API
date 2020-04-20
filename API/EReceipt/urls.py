@@ -19,8 +19,8 @@ urlpatterns = [
 
     # 영수증 리스트 반환
     path('main/return_receipt_img_List/<str:req_username>/', ReturnReceiptImgList.as_view()),      # 전체 반환
-    path('main/receipt_date/', ReceiptDate.as_view()),                          # 개월 단위로 반환
-    path('main/receipt_date_select/', ReceiptDateSelect.as_view()),             # 지정한 날짜 단위로 반환
+    path('main/receipt_date/<str:req_username>/<int:month>/', ReceiptDate.as_view()),                          # 개월 단위로 반환
+    path('main/receipt_date_select/<str:req_username>/<str:s_date>/<str:e_date>/', ReceiptDateSelect.as_view()),  # 지정한 날짜 단위로 반환
 
     path('test/', TestView.as_view()),                                          # 테스트용
 ]

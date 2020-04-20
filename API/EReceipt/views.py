@@ -262,47 +262,40 @@ class CheckUserWithDeviceId(generics.GenericAPIView):
 
 
 # 선택한 날짜 사이의 영수증 이미지
-class ReceiptDateSelect(generics.ListAPIView):
+class ReceiptDateSelect(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
 
-    def get_queryset(self, *args, **kwargs):
-        user = self.request.data['user']
-        s_date = self.request.data['s_date']
-        st_date = datetime.datetime.strptime(s_date, '%Y-%m-%d')
-        e_date = self.request.data['e_date']
-        en_date = datetime.datetime.strptime(e_date, '%Y-%m-%d')
-        date_format = "%Y-%m-%d"
-        start_date = st_date.strftime(date_format)
-        end_date = (en_date + datetime.timedelta(days=1)).strftime(date_format)
-        queryset = Receipt.objects.filter(receipt_date__range=[start_date, end_date], user=user)
-        return queryset
+    def get(self, request, req_username, s_date, e_date, *args, **kwargs):
+        try:
+            userquery = self.queryset.filter(user=User.objects.get(username=req_username))
+            st_date = datetime.datetime.strptime(s_date, '%Y-%m-%d')
+            en_date = datetime.datetime.strptime(e_date, '%Y-%m-%d')
+            date_format = "%Y-%m-%d"
+            start_date = st_date.strftime(date_format)
+            end_date = (en_date + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = userquery.filter(receipt_date__range=[start_date, end_date])
+            serializer = ReceiptDateSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 월별 영수증 이미지
-class ReceiptDate(generics.ListAPIView):
+class ReceiptDate(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        user = self.request.data['user']
-        months = self.request.data['months']
-        date_format = "%Y-%m-%d"
-        if months == "1":
-            months_ago = (datetime.datetime.now() - relativedelta(months=1)).strftime(date_format)
+    queryset = Receipt.objects.all()
+    def get(self, request, req_username, month, *args, **kwargs):
+        try:
+            userquery = self.queryset.filter(user=User.objects.get(username=req_username))
+            date_format = "%Y-%m-%d"
+            months_ago = (datetime.datetime.now() - relativedelta(months=month)).strftime(date_format)
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
-            queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
-            return queryset
-
-        elif months == "3":
-            months_ago = (datetime.datetime.now() - relativedelta(months=3)).strftime(date_format)
-            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
-            queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
-            return queryset
-
-        elif months == "6":
-            months_ago = (datetime.datetime.now() - relativedelta(months=6)).strftime(date_format)
-            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
-            queryset = Receipt.objects.filter(receipt_date__range=[months_ago, now_date], user=user)
-            return queryset
+            queryset = userquery.filter(receipt_date__range=[months_ago, now_date])
+            serializer = ReceiptDateSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TestView(APIView):
