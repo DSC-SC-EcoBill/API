@@ -163,14 +163,7 @@ class SearchPWCode(generics.GenericAPIView):
 
 # 사용자 영수증 전체 목록 가져오기
 class ReturnReceiptImgList(generics.ListAPIView):
-    serializer_class = ReceiptDateSerializer
 
-    def get_queryset(self):
-        query = Receipt.objects.all()
-        user = self.request.query_params.get('user', None)
-        if user is not None:
-            queryset = query.filter(user=user)
-        return queryset
 
 
 # 디바이스에서 받아온 영수증 투플생성
