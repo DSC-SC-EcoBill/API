@@ -54,6 +54,14 @@ class SearchPWSerializerVerify(serializers.ModelSerializer):
         fields = ('email', 'verify_code')
 
 
+# 비밀번호 재설정
+class UpdatePW(serializers.Serializer):
+    new_password = serializers.CharField(required=True)
+
+    def validate_new_password(self, value):
+        pass
+
+
 # 영수증 tuple을 생성하는 시리얼라이저
 class CreateReceiptTupleSerializer(serializers.ModelSerializer):
     class Meta:
