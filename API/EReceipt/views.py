@@ -31,6 +31,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 
+# 회원관리
 # 회원가입(확정)
 class SignupAPI(generics.GenericAPIView):
     serializer_class = SignupSerializer
@@ -39,6 +40,11 @@ class SignupAPI(generics.GenericAPIView):
         if len(request.data["password"]) < 4:
             body = {"message": "비밀번호 길이가 너무 짧습니다."}
             return Response(body, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if User.objects.get(email=request.data['email']):
+                return Response('이미 등록된 이메일입니다.', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as ex:
+            pass
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -168,37 +174,7 @@ class UpdatePW(generics.GenericAPIView):
     pass
 
 
-# 사용자 영수증 전체 목록 가져오기
-class ReturnReceiptImgList(generics.GenericAPIView):
-    serializer_class = ReceiptDateSerializer
-    queryset = Receipt.objects.all()
-
-    def get(self, request, req_username, *args, **kwargs):
-        try:
-            user = self.queryset.filter(user=User.objects.get(username=req_username))
-            serializer = ReceiptDateSerializer(user, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as ex:
-            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
-
-
-# 디바이스에서 받아온 영수증 투플생성
-class NewReceiptURL(generics.GenericAPIView):
-    serializer_class = NewReceiptURLSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        receipt = serializer.save()
-        return Response(
-            {
-                "receipt": NewReceiptURLSerializer(
-                    receipt, context=self.get_serializer_context()
-                ).data
-            }
-        )
-
-
+# 영수증 관리
 # 영수증 튜플 생성
 class CreateReceiptTuple(generics.GenericAPIView):
     serializer_class = CreateReceiptTupleSerializer
@@ -261,6 +237,21 @@ class CheckUserWithDeviceId(generics.GenericAPIView):
         return user_id
 
 
+# 영수증 리스트 반환
+# 사용자 영수증 전체 목록 가져오기
+class ReturnReceiptImgList(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
+
+    def get(self, request, req_username, *args, **kwargs):
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            serializer = ReceiptDateSerializer(user, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 선택한 날짜 사이의 영수증 이미지
 class ReceiptDateSelect(generics.ListAPIView):
     serializer_class = ReceiptDateSerializer
@@ -305,6 +296,7 @@ class ReceiptDate(generics.ListAPIView):
             return queryset
 
 
+# 테스트용
 class TestView(APIView):
     serializer_class = TestSerializer()
 
