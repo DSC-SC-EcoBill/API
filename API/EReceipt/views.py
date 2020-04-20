@@ -31,8 +31,9 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 
+# -----------------------------------------------------------
 # 회원관리
-# 회원가입(확정)
+# 회원가입
 class SignupAPI(generics.GenericAPIView):
     serializer_class = SignupSerializer
 
@@ -58,7 +59,7 @@ class SignupAPI(generics.GenericAPIView):
         )
 
 
-# 로그인(확정)
+# 로그인
 class SigninAPI(generics.GenericAPIView):
     serializer_class = SigninSerializer
 
@@ -170,11 +171,7 @@ class SearchPWCode(generics.GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 비밀번호 재설정
-class UpdatePW(generics.GenericAPIView):
-    pass
-
-
+# -----------------------------------------------------------
 # 영수증 관리
 # 영수증 튜플 생성
 class CreateReceiptTuple(generics.GenericAPIView):
@@ -191,7 +188,7 @@ class CreateReceiptTuple(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
+# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
@@ -249,6 +246,7 @@ class DeleteReceipt(generics.DestroyAPIView):
             return Response('Error :', ex, status=status.HTTP_400_BAD_REQUEST)
 
 
+# -----------------------------------------------------------
 # 영수증 리스트 반환
 # 사용자 영수증 전체 목록 가져오기
 class ReturnReceiptImgList(generics.GenericAPIView):
