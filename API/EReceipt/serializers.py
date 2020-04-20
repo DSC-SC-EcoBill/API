@@ -118,7 +118,7 @@ class ReceiptListSerializer(serializers.ModelSerializer):
 class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = '__all__'
+        fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
 
 
 class TestSerializer(serializers.ModelSerializer):
