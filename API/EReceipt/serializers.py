@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 from .models import Receipt, VerifyCodes, Device
 
 
-# 회원가입(확정)
+# -----------------------------------------------------------
+# 회원관리
+# 회원가입
 class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -21,14 +23,14 @@ class SignupSerializer(serializers.ModelSerializer):
         return user
 
 
-# 접속 유지중인가 확인(확정)
+# 접속 유지중인가 확인
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
 
 
-# 로그인(확정)
+# 로그인
 class SigninSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
@@ -40,36 +42,30 @@ class SigninSerializer(serializers.Serializer):
         raise serializers.ValidationError("Unable to log in with provided credentials.")
 
 
-# 비밀번호 찾기(확정)
+# 비밀번호 찾기
 class SearchPWSerializer(serializers.ModelSerializer):
     class Meta:
         model = VerifyCodes
         fields = ('email', 'verify_code')
 
 
-# 비밀번호 with 인증코드(확정)
+# 비밀번호 with 인증코드
 class SearchPWSerializerVerify(serializers.ModelSerializer):
     class Meta:
         model = VerifyCodes
         fields = ('email', 'verify_code')
 
 
-# 비밀번호 재설정
-class UpdatePW(serializers.Serializer):
-    new_password = serializers.CharField(required=True)
-
-    def validate_new_password(self, value):
-        pass
-
-
+# -----------------------------------------------------------
+# 영수증 관리
 # 영수증 tuple을 생성하는 시리얼라이저
 class CreateReceiptTupleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('receipt_img_url', 'device_id')
+        fields = ('receipt_img_url', 'receipt_img_uri', 'device_id')
 
 
-# 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저(확정)
+# 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저
 class CheckUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
@@ -94,6 +90,8 @@ class NewReceiptURLSerializer(serializers.ModelSerializer):
 # class DeleteReceiptSerializer(serializers.ModelSerializer):
 
 
+# -----------------------------------------------------------
+# 영수증 리스트 반환
 # 선택한 날짜와 시간의 맞는 영수증 이미지리스트
 class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:

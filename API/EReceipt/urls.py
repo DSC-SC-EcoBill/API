@@ -7,7 +7,6 @@ urlpatterns = [
 
     path('main/searchpw/', SearchPW.as_view()),                                 # 비밀번호 찾기
     path('main/searchpwcode/', SearchPWCode.as_view()),                         # 비밀번호 찾기 with 인증코드
-    path('main/updatepw/', UpdatePW.as_view()),                                 # 비밀번호 재설정
 
     # 디바이스 to API, 영수증 튜플 생성
     path('main/upload_img/', CreateReceiptTuple.as_view()),                     # 영수증 튜플 생성

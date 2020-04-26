@@ -10,7 +10,7 @@ class Device(models.Model):
 
 # 영수증 이미지
 class Receipt(models.Model):
-    receipt_img_url = models.TextField(default='')
+    receipt_img_uri = models.TextField(default='')
     receipt_date = models.DateTimeField(auto_now_add=True)
     is_Storage = models.IntegerField(default=0)
     device_id = models.ForeignKey(Device, on_delete=models.CASCADE, default=1)
