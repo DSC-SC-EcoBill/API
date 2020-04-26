@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Receipt, Qrcodes, VerifyCodes
+from .models import Receipt, VerifyCodes, Device
 
 
 # 회원가입(확정)
@@ -94,35 +94,8 @@ class NewReceiptURLSerializer(serializers.ModelSerializer):
 # class DeleteReceiptSerializer(serializers.ModelSerializer):
 
 
-# 영수증 QR코드 투플생성
-class NewQrcodesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Qrcodes
-        fields = ('id', 'qr_url', 'receipt')
-
-    def create(self, validated_data):
-        qrcodes = Qrcodes.objects.create(
-            qr_url=validated_data["qr_url"], receipt=validated_data["receipt"]
-        )
-        return qrcodes
-
-
-# 영수증 목록 가져오기
-class ReceiptListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Receipt
-        fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
-
-
 # 선택한 날짜와 시간의 맞는 영수증 이미지리스트
 class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
-
-
-class TestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
-
+        fields = ('id', 'user', 'receipt_img_url', 'receipt_date', 'total_price')

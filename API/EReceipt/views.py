@@ -21,7 +21,7 @@ import random
 from google.cloud import storage
 
 # Models
-from .models import Receipt, Qrcodes, VerifyCodes
+from .models import Receipt, VerifyCodes, Device
 
 # Serializers
 from .serializers import *
@@ -30,9 +30,12 @@ from .serializers import *
 import datetime
 from dateutil.relativedelta import relativedelta
 
+# total price
+from django.db.models import Sum
+
 
 # 회원관리
-# 회원가입(확정)
+# 회원가입
 class SignupAPI(generics.GenericAPIView):
     serializer_class = SignupSerializer
 
@@ -58,7 +61,7 @@ class SignupAPI(generics.GenericAPIView):
         )
 
 
-# 로그인(확정)
+# 로그인
 class SigninAPI(generics.GenericAPIView):
     serializer_class = SigninSerializer
 
@@ -190,7 +193,8 @@ class CreateReceiptTuple(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환(확정)
+
+# 발급된 영수증의 user가 누구인지 확인하고, 영수증 이미지의 링크 url을 반환
 class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
@@ -237,6 +241,17 @@ class CheckUserWithDeviceId(generics.GenericAPIView):
         return user_id
 
 
+# 영수증 삭제
+class DeleteReceipt(generics.DestroyAPIView):
+    def delete(self, request, target_id, *args, **kwargs):
+        target = Receipt.objects.get(id=target_id)
+        try:
+            target.delete()
+            return Response('Success', status=status.HTTP_202_ACCEPTED)
+        except Exception as ex:
+            return Response('Error :', ex, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 영수증 리스트 반환
 # 사용자 영수증 전체 목록 가져오기
 class ReturnReceiptImgList(generics.GenericAPIView):
@@ -247,6 +262,44 @@ class ReturnReceiptImgList(generics.GenericAPIView):
         try:
             user = self.queryset.filter(user=User.objects.get(username=req_username))
             serializer = ReceiptDateSerializer(user, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 이번달 소비 총금액
+class ReceiptTotal(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
+
+    def get(self, request, req_username, *args, **kwargs):
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            date_format = "%Y-%m-%d"
+            dt = datetime.datetime.now()
+            months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = user.filter(receipt_date__range=[months_ago, now_date])
+            total = queryset.aggregate(Sum('total_price'))
+            return Response({'total sum returns': total}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 이번달 영수증 목록
+class ReceiptMonth(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
+
+    def get(self, request, req_username, *args, **kwargs):
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            date_format = "%Y-%m-%d"
+            dt = datetime.datetime.now()
+            months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = user.filter(receipt_date__range=[months_ago, now_date])
+            serializer = ReceiptDateSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             return Response(ex, status=status.HTTP_400_BAD_REQUEST)
@@ -287,13 +340,3 @@ class ReceiptDate(generics.GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             return Response(ex, status=status.HTTP_400_BAD_REQUEST)
-
-
-# 테스트용
-class TestView(APIView):
-    serializer_class = TestSerializer()
-
-    def get(self, request, format=None):
-        users = User.objects.all()
-        serializer = TestSerializer(users, many=True)
-        return Response(serializer.data)
