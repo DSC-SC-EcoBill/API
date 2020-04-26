@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Receipt, Qrcodes, VerifyCodes
+from .models import Receipt, VerifyCodes
+
 
 # -----------------------------------------------------------
 # 회원관리
@@ -61,7 +62,7 @@ class SearchPWSerializerVerify(serializers.ModelSerializer):
 class CreateReceiptTupleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('receipt_img_url', 'device_id')
+        fields = ('receipt_img_url', 'receipt_img_uri', 'device_id')
 
 
 # 생성된 영수증 tuple에 사용자를 추가하는 시리얼라이저
