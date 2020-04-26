@@ -77,7 +77,6 @@ class SigninAPI(generics.GenericAPIView):
                     user, context=self.get_serializer_context()
                 ).data,
                 "token": AuthToken.objects.create(user)[1],
-                "countreceipt": Receipt.objects.all().last().id,
             }
         )
 
@@ -187,6 +186,7 @@ class SignupDevice(generics.GenericAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # -----------------------------------------------------------
 # 영수증 관리
 # 영수증 튜플 생성
@@ -228,7 +228,7 @@ class CheckUser(generics.GenericAPIView):
         return user_id
 
     # 영수증에 적힌 총 금액을 받는 함수
-    def get_total_price(uri, target_str='Total'):
+    def get_total_price(self, uri, target_str='Total'):
         client = vision.ImageAnnotatorClient()
         image = vision.types.Image()
         image.source.image_uri = uri
@@ -302,6 +302,11 @@ class ReturnReceiptImgList(generics.GenericAPIView):
     def get(self, request, req_username, *args, **kwargs):
         try:
             user = self.queryset.filter(user=User.objects.get(username=req_username))
+
+            # device_id를 brand_name으로 변경
+            for _ in user:
+                _.device_id = Device.objects.get(id=_.device_id).brand_name
+
             serializer = ReceiptDateSerializer(user, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
@@ -340,6 +345,11 @@ class ReceiptMonth(generics.GenericAPIView):
             months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = user.filter(receipt_date__range=[months_ago, now_date])
+
+            # device_id를 brand_name으로 변경
+            for _ in queryset:
+                _.device_id = Device.objects.get(id=_.device_id).brand_name
+
             serializer = ReceiptDateSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
@@ -360,6 +370,11 @@ class ReceiptDateSelect(generics.GenericAPIView):
             start_date = st_date.strftime(date_format)
             end_date = (en_date + datetime.timedelta(days=1)).strftime(date_format)
             queryset = userquery.filter(receipt_date__range=[start_date, end_date])
+
+            # device_id를 brand_name으로 변경
+            for _ in queryset:
+                _.device_id = Device.objects.get(id=_.device_id).brand_name
+
             serializer = ReceiptDateSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
@@ -370,6 +385,7 @@ class ReceiptDateSelect(generics.GenericAPIView):
 class ReceiptDate(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
+
     def get(self, request, req_username, month, *args, **kwargs):
         try:
             userquery = self.queryset.filter(user=User.objects.get(username=req_username))
@@ -377,6 +393,11 @@ class ReceiptDate(generics.GenericAPIView):
             months_ago = (datetime.datetime.now() - relativedelta(months=month)).strftime(date_format)
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = userquery.filter(receipt_date__range=[months_ago, now_date])
+
+            # device_id를 brand_name으로 변경
+            for _ in queryset:
+                _.device_id = Device.objects.get(id=_.device_id).brand_name
+
             serializer = ReceiptDateSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
