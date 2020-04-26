@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Receipt, VerifyCodes
+from .models import Receipt, VerifyCodes, Device
 
 
 # -----------------------------------------------------------
@@ -72,17 +72,24 @@ class CheckUserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# 서버에서 받아온 영수증주소 투플생성
+class NewReceiptURLSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receipt
+        fields = ('id', 'user', 'receipt_img_url', 'device_id')
+
+    def create(self, validated_data):
+        receipt = Receipt.objects.create(
+            user=validated_data["user"], receipt_img_url=validated_data["receipt_img_url"],
+            device_id=validated_data["device_id"]
+        )
+        return receipt
+
+
 # -----------------------------------------------------------
 # 영수증 리스트 반환
 # 선택한 날짜와 시간의 맞는 영수증 이미지리스트
 class ReceiptDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = ('id', 'user', 'receipt_img_url', 'receipt_date')
-
-
-class TestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
-
+        fields = ('id', 'user', 'receipt_img_url', 'receipt_date', 'total_price')

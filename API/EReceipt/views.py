@@ -22,7 +22,7 @@ from google.cloud import storage
 from google.cloud import vision
 
 # Models
-from .models import Receipt, VerifyCodes
+from .models import Receipt, VerifyCodes, Device
 
 # Serializers
 from .serializers import *
@@ -30,6 +30,9 @@ from .serializers import *
 # Database
 import datetime
 from dateutil.relativedelta import relativedelta
+
+# total price
+from django.db.models import Sum
 
 
 # -----------------------------------------------------------
@@ -172,7 +175,6 @@ class SearchPWCode(generics.GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# -----------------------------------------------------------
 # 영수증 관리
 # 영수증 튜플 생성
 class CreateReceiptTuple(generics.GenericAPIView):
@@ -196,7 +198,7 @@ class CheckUser(generics.GenericAPIView):
 
     def put(self, request, creat_receipt_id, *args, **kwargs):
         input_data = {"user": self.get_user_id(request.data["username"]),
-                      "total_amount": self.get_total_amount(Receipt.objects.get(id=creat_receipt_id).receipt_img_uri)}
+                      "total_price": self.get_total_price(Receipt.objects.get(id=creat_receipt_id).receipt_img_uri)}
 
         receipt = Receipt.objects.get(id=creat_receipt_id)
         serializer = CheckUserSerializer(receipt, data=input_data)
@@ -293,6 +295,44 @@ class ReturnReceiptImgList(generics.GenericAPIView):
             return Response(ex, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 이번달 소비 총금액
+class ReceiptTotal(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
+
+    def get(self, request, req_username, *args, **kwargs):
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            date_format = "%Y-%m-%d"
+            dt = datetime.datetime.now()
+            months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = user.filter(receipt_date__range=[months_ago, now_date])
+            total = queryset.aggregate(Sum('total_price'))
+            return Response({'total sum returns': total}, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 이번달 영수증 목록
+class ReceiptMonth(generics.GenericAPIView):
+    serializer_class = ReceiptDateSerializer
+    queryset = Receipt.objects.all()
+
+    def get(self, request, req_username, *args, **kwargs):
+        try:
+            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            date_format = "%Y-%m-%d"
+            dt = datetime.datetime.now()
+            months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
+            now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
+            queryset = user.filter(receipt_date__range=[months_ago, now_date])
+            serializer = ReceiptDateSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(ex, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 선택한 날짜 사이의 영수증 이미지
 class ReceiptDateSelect(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
@@ -328,13 +368,3 @@ class ReceiptDate(generics.GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             return Response(ex, status=status.HTTP_400_BAD_REQUEST)
-
-
-# 테스트용
-class TestView(APIView):
-    serializer_class = TestSerializer()
-
-    def get(self, request, format=None):
-        users = User.objects.all()
-        serializer = TestSerializer(users, many=True)
-        return Response(serializer.data)
