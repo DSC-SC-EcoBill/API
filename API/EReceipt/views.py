@@ -196,7 +196,7 @@ class CheckUser(generics.GenericAPIView):
 
     def put(self, request, creat_receipt_id, *args, **kwargs):
         input_data = {"user": self.get_user_id(request.data["username"]),
-                      "total_amount": get_total_amount(Receipt.objects.get(id=creat_receipt_id).receipt_img_uri)}
+                      "total_amount": self.get_total_amount(Receipt.objects.get(id=creat_receipt_id).receipt_img_uri)}
 
         receipt = Receipt.objects.get(id=creat_receipt_id)
         serializer = CheckUserSerializer(receipt, data=input_data)
@@ -211,6 +211,35 @@ class CheckUser(generics.GenericAPIView):
     def get_user_id(self, username):
         user_id = User.objects.get(username=username).id
         return user_id
+
+    # 영수증에 적힌 총 금액을 받는 함수
+    def get_total_amount(uri, target_str='Total'):
+        client = vision.ImageAnnotatorClient()
+        image = vision.types.Image()
+        image.source.image_uri = uri
+
+        response = client.text_detection(image=image)
+        texts = response.text_annotations
+
+        if response.error.message:
+            raise Exception(
+                '{}\nFor more info on error messages, check: '
+                'https://cloud.google.com/apis/design/errors'.format(
+                    response.error.message))
+
+        txt = []
+        target_y = False
+        for text in texts:
+            txt.append(text.description)
+            txt.append(text.bounding_poly.vertices[0].y)
+            if text.description == target_str:
+                target_y = text.bounding_poly.vertices[0].y
+
+            if target_y and txt[-1] > target_y:
+                break
+
+        result = int(txt[-4])
+        return result
 
 
 # device 코드가 있는 고정 QR코드에 접속했을때 실행
@@ -246,36 +275,6 @@ class DeleteReceipt(generics.DestroyAPIView):
             return Response('Success', status=status.HTTP_202_ACCEPTED)
         except Exception as ex:
             return Response('Error :', ex, status=status.HTTP_400_BAD_REQUEST)
-
-
-# 영수증에 적힌 총 금액을 받는 함수
-def get_total_amount(uri, target_str='Total'):
-    client = vision.ImageAnnotatorClient()
-    image = vision.types.Image()
-    image.source.image_uri = uri
-
-    response = client.text_detection(image=image)
-    texts = response.text_annotations
-
-    if response.error.message:
-        raise Exception(
-            '{}\nFor more info on error messages, check: '
-            'https://cloud.google.com/apis/design/errors'.format(
-                response.error.message))
-
-    txt = []
-    target_y = False
-    for text in texts:
-        txt.append(text.description)
-        txt.append(text.bounding_poly.vertices[0].y)
-        if text.description == target_str:
-            target_y = text.bounding_poly.vertices[0].y
-
-        if target_y and txt[-1] > target_y:
-            break
-
-    result = int(txt[-4])
-    return result
 
 
 # -----------------------------------------------------------
