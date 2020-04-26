@@ -175,6 +175,19 @@ class SearchPWCode(generics.GenericAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 디바이스 등록하기
+class SignupDevice(generics.GenericAPIView):
+    serializer_class = SignupDeviceSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = SignupDeviceSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# -----------------------------------------------------------
 # 영수증 관리
 # 영수증 튜플 생성
 class CreateReceiptTuple(generics.GenericAPIView):
@@ -215,7 +228,7 @@ class CheckUser(generics.GenericAPIView):
         return user_id
 
     # 영수증에 적힌 총 금액을 받는 함수
-    def get_total_amount(uri, target_str='Total'):
+    def get_total_price(uri, target_str='Total'):
         client = vision.ImageAnnotatorClient()
         image = vision.types.Image()
         image.source.image_uri = uri

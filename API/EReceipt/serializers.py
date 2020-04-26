@@ -56,6 +56,13 @@ class SearchPWSerializerVerify(serializers.ModelSerializer):
         fields = ('email', 'verify_code')
 
 
+# 디바이스 추가
+class SignupDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = 'brand_name',
+
+
 # -----------------------------------------------------------
 # 영수증 관리
 # 영수증 tuple을 생성하는 시리얼라이저
