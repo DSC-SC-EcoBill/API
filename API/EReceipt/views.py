@@ -19,9 +19,10 @@ import random
 
 # Google cloud platform
 from google.cloud import storage
+from google.cloud import vision
 
 # Models
-from .models import Receipt, Qrcodes, VerifyCodes
+from .models import Receipt, VerifyCodes
 
 # Serializers
 from .serializers import *
@@ -182,8 +183,9 @@ class CreateReceiptTuple(generics.GenericAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            receipt_id = Receipt.objects.get(receipt_img_url=request.data['receipt_img_url']).id
-            return_url = 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(receipt_id)
+            return_url = 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(
+                Receipt.objects.get(receipt_img_url=request.data['receipt_img_url']).id
+            )
             return Response(return_url, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -193,7 +195,8 @@ class CheckUser(generics.GenericAPIView):
     serializer_class = CheckUserSerializer
 
     def put(self, request, creat_receipt_id, *args, **kwargs):
-        input_data = {"user": self.get_user_id(request.data["username"])}
+        input_data = {"user": self.get_user_id(request.data["username"]),
+                      "total_amount": get_total_amount(Receipt.objects.get(id=creat_receipt_id).receipt_img_uri)}
 
         receipt = Receipt.objects.get(id=creat_receipt_id)
         serializer = CheckUserSerializer(receipt, data=input_data)
@@ -221,7 +224,6 @@ class CheckUserWithDeviceId(generics.GenericAPIView):
 
         query = Receipt.objects.all()
         receipt = query.filter(device_id=req_device_id, user=1).last()
-        print(receipt)
 
         serializer = CheckUserSerializer(receipt, data=input_data)
 
@@ -244,6 +246,36 @@ class DeleteReceipt(generics.DestroyAPIView):
             return Response('Success', status=status.HTTP_202_ACCEPTED)
         except Exception as ex:
             return Response('Error :', ex, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 영수증에 적힌 총 금액을 받는 함수
+def get_total_amount(uri, target_str='Total'):
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+
+    txt = []
+    target_y = False
+    for text in texts:
+        txt.append(text.description)
+        txt.append(text.bounding_poly.vertices[0].y)
+        if text.description == target_str:
+            target_y = text.bounding_poly.vertices[0].y
+
+        if target_y and txt[-1] > target_y:
+            break
+
+    result = int(txt[-4])
+    return result
 
 
 # -----------------------------------------------------------
