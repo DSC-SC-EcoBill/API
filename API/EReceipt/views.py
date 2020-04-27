@@ -285,12 +285,21 @@ class CheckUserWithDeviceId(generics.GenericAPIView):
 class DeleteReceipt(generics.DestroyAPIView):
     def delete(self, request, target_id, *args, **kwargs):
         target = Receipt.objects.get(id=target_id)
+        target_gcs_object = target.receipt_img_uri[26:]
         try:
+            self.delete_gcs(target_gcs_object)
             target.delete()
             return Response('Success', status=status.HTTP_202_ACCEPTED)
         except Exception as ex:
             return Response('Error :', ex, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete_gcs(self, blob_name, bucket_name='dsc_ereceipt_storage'):
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        blob.delete()
+
+        print('Blob {} deleted'.format(blob_name))
 
 # -----------------------------------------------------------
 # 영수증 리스트 반환
