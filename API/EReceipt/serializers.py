@@ -49,13 +49,6 @@ class SearchPWSerializer(serializers.ModelSerializer):
         fields = ('email', 'verify_code')
 
 
-# 비밀번호 with 인증코드
-class SearchPWSerializerVerify(serializers.ModelSerializer):
-    class Meta:
-        model = VerifyCodes
-        fields = ('email', 'verify_code')
-
-
 # 디바이스 추가
 class SignupDeviceSerializer(serializers.ModelSerializer):
     class Meta:
