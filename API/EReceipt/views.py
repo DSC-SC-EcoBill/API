@@ -342,7 +342,7 @@ class ReceiptTotal(generics.GenericAPIView):
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = user.filter(receipt_date__range=[months_ago, now_date])
             total = queryset.aggregate(Sum('total_price'))
-            return Response({'total sum returns': total}, status=status.HTTP_200_OK)
+            return Response(total, status=status.HTTP_200_OK)
         except Exception as ex:
             return Response(ex, status=status.HTTP_400_BAD_REQUEST)
 
