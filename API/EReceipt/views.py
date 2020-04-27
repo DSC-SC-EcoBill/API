@@ -95,34 +95,39 @@ class SearchPW(generics.GenericAPIView):
     serializer_class = SearchPWSerializer
 
     def post(self, request, *args, **kwargs):
-        input_data = {'email': request.data['email'], 'verify_code': self.verify_code_generator()}
-        serializer = SearchPWSerializer(data=input_data)
+        try:
+            User.objects.get(email=request.data['email'])       # 존재하는 이메일인지 확인
+            input_data = {'email': request.data['email'], 'verify_code': self.verify_code_generator()}
+            serializer = SearchPWSerializer(data=input_data)
 
-        if serializer.is_valid():
-            # verify_code 테이블에 tuple 생성
+            if serializer.is_valid():
+                # verify_code 테이블에 tuple 생성
 
-            serializer.save()
+                serializer.save()
 
-            # 이메일 작성
-            first_name = User.objects.get(email=request.data['email']).first_name
-            subject = 'Did you ask your password from Ereceipt app?'
-            body = '''
-            Hello {}!!
-            We are Ereceipt team.
-            We send your verify code for search password.
-            If you doesn't request search password, please contact to us :)
-
-            This is your verify code
-            {}
-
-            Please write the code in your application.
-
-            -------------------------
-            Thanks to use our Ereceipt service!
-            '''.format(first_name, input_data['verify_code'])
-            self.send_email(request.data['email'], subject, body)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+                # 이메일 작성
+                first_name = User.objects.get(email=request.data['email']).first_name
+                subject = 'Did you ask your password from Ereceipt app?'
+                body = '''
+                Hello {}!!
+                We are Ereceipt team.
+                We send your verify code for search password.
+                If you doesn't request search password, please contact to us :)
+    
+                This is your verify code
+                {}
+    
+                Please write the code in your application.
+    
+                -------------------------
+                Thanks to use our Ereceipt service!
+                '''.format(first_name, input_data['verify_code'])
+                self.send_email(request.data['email'], subject, body)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as ex:
+            return Response("Member information does not exist!! error massage:{}".format(ex)
+                            , status=status.HTTP_404_NOT_FOUND)
 
     # Gmail을 보내는 함수
     def send_email(self, email, subject, body):
@@ -300,6 +305,7 @@ class DeleteReceipt(generics.DestroyAPIView):
         blob.delete()
 
         print('Blob {} deleted'.format(blob_name))
+
 
 # -----------------------------------------------------------
 # 영수증 리스트 반환
