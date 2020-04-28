@@ -20,6 +20,7 @@
             product_price[x]=su;
             x++;
         }
+        
 
         function c(){
         flag = true;
