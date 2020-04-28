@@ -20,7 +20,7 @@
 	  overflow: hidden;
 	  font-weight: 300;
 	  background-color: #fafafa; }
-	  button{
+	  input,button{
 	  	border-radius:50px;
 	  	width: 70%;
 	  	padding: 3px;
@@ -115,7 +115,7 @@
 	   width: 50%;
 	   box-sizing: border-box;   
 	   padding: 24px;}
-	.product_list button{
+	input, .product_list button{
 	   	background-color: #faf7d7;
 	   	border-color: transparent;
 	   	font-size:0.9em;
@@ -139,6 +139,7 @@
 	   	margin: 0 0 17.43px 0;
 	   }
 
+
 	</style>
 </head>
 
@@ -146,50 +147,49 @@
 	<div class="all">
 <div class="hgrid-25"> 
 <div class="title">
-<img src="title.PNG"></img></div>
+<img src="https://storage.cloud.google.com/dsc_ereceipt_storage/Logos/ecobill_logo2.png"></img></div>
 </div>
 
 
 	<!--상품 목록-->
 <div class="hgrid-45">
-<div class="product_list">
+<div class="product_list" name="calform">
 	<div class="wgrid-25">
 	<h2>Fappuccino</h2>
-	<button type="submit" name="" id="Java Chip"  >Java Chip</button>
-    <button type="submit" name="" id="Chocolate White Mocha"  >Chocolate White Mocha</button>
-    <button type="submit" name="" id="Mocha"  >Mocha</button>
-    <button type="submit" name="" id="Green Tea Cream"  >Green Tea Cream</button>
-    <button type="submit" name="" id="Chocolate Cream Chip"  >Chocolate Cream Chip</button>
-    <button type="submit" name="" id="Strawberries Cream"  >Strawberries Cream</button>
-    <button type="submit" name="" id="Avocado">Avocado</button>
+		<input type="button" class="btn" onclick="but(6100)" value="Java Chip">
+		<input type="button" class="btn" onclick="but(100)" value="Chocolate White Mocha"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Mocha"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Green Tea Cream"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Chocolate Cream Chip"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Strawberries Cream"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Avocado">
 	</div>
 	<div class="wgrid-25">
           <h2>Fizzio</h2>
-          <button type="submit" name="" id="Pink Grapefruite"  >Pink Grapefruite</button>
-    <button type="submit" name="" id="Cool Lime"  >Cool Lime</button>
-    <button type="submit" name="" id="Black Tea Lemonade"  >Black Tea Lemonade</button>
+		<input type="button" class="btn" onclick="but(6100)" value="Pink Grapefruite"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Cool Lime"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Black Tea Lemonade"  >
     <h2 style="margin: 0 0 17.43px 0">Chocolate</h2>
-    <button type="submit" name="" id="Signature Chocolate"  >Signature Chocolate</button>
+		<input type="button" class="btn" onclick="but(6100)" value="Signature Chocolate"  >
 	</div>
 	<div class="wgrid-25">
           <h2>Teavana</h2>
-          <button type="submit" name="" id="Vanilla Black Tea Latte"  >Vanilla Black Tea Latte</button>
-    <button type="submit" name="" id="Green Tea Latte"  >Green Tea Latte</button>
-    <button type="submit" name="" id="Lemon Mint Tea"  >Lemon Mint Tea</button>
-    <button type="submit" name="" id="Lime Passion Tea"  >Lime Passion Tea</button>
-    <button type="submit" name="" id="Grapefruit Honey Black Tea"  >Grapefruit Honey Black Tea</button>
-    <button type="submit" name="" id="Chai Tea Latte"  >Chai Tea Latte</button>
-    <button type="submit" name="" id="Earl grey Tea Latte"  >Earl grey Tea Latte</button>
+          <input type="button" class="btn" onclick="but(6100)" value="Vanilla Black Tea Latte"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Green Tea Latte"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Lemon Mint Tea"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Lime Passion Tea"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Grapefruit Honey Black Tea"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Chai Tea Latte"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Earl grey Tea Latte"  >
 	</div>
 	<div class="wgrid-25">
           <h2>Coffee&Espresso</h2>
-          <button type="submit" name="" id="Cole Foam Cappuccino"  >Cole Foam Cappuccino</button>
-    <button type="submit" name="" id="Caramel Macchiato"  >Caramel Macchiato</button>
-    <button type="submit" name="" id="Caffe Mocha"  >Caffe Mocha</button>
-    <button type="submit" name="" id="Caffe Latte"  >Caffe Latte</button>
-    <button type="submit" name="" id="Caffe Latte"  >Caffe Latte</button>
-    <button type="submit" name="" id="Decaf Caffe Americano"  >Decaf Caffe Americano</button>
-    <button type="submit" name="" id="Brewed Coffee"  >Brewed Coffee</button>
+		<input type="button" class="btn" onclick="but(6100)" value="Cole Foam Cappuccino"  >>
+		<input type="button" class="btn" onclick="but(6100)" value="Caramel Macchiato"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Caffe Mocha"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Caffe Latte"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Decaf Caffe Americano"  >
+		<input type="button" class="btn" onclick="but(6100)" value="Caffe Americano"  >
 	</div>
 </div>
 </div>
@@ -201,7 +201,6 @@
 		<div class="wgrid-50">
 			<!--구매할 상품 목록-->
 			<div class="wgrid-60" id=ProductList>
-				<div class="product">Caramel Macchiato</div>
 			</div>
 			<!--구매할 상품 가격-->
 			<div class="wgrid-40" id=ProductPrice>
@@ -231,6 +230,6 @@
 
 </div>
 </div>
-
+<script src="Ecobill.js"></script>
 </body>
 </html>
