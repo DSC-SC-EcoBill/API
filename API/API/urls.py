@@ -21,5 +21,5 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('EReceipt.urls')),
-    path('api/auth', include('knox.urls'))
+    path('api/auth', include('knox.urls')),
 ]
