@@ -513,10 +513,7 @@ class PosFuncs:
         # destination_blob_name : 업로드될 경로와 파일명
         # bucket_name : 업로드할 버킷명
 
-        # now = datetime.datetime.now()
-        # image_name = '{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute, now.second)
         file_name = open(img_dir, 'rb')                                           # 업로드할 이미지의 파일 객체
-        # destination_blob_name = 'receipts/{}.jpg'.format(image_name)              # 업로드할 이미지의 gcs 경로
 
         try:
             # upload img
