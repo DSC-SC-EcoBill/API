@@ -319,7 +319,7 @@ class ReturnReceiptImgList(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             user = self.queryset.filter(user=User.objects.get(username=request.data['username']))
 
@@ -338,7 +338,7 @@ class ReceiptTotal(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             user = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
@@ -357,7 +357,7 @@ class ReceiptMonth(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             user = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
@@ -381,7 +381,7 @@ class ReceiptDateSelect(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             userquery = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             st_date = datetime.datetime.strptime(request.data['s_date'], '%Y-%m-%d')
@@ -406,7 +406,7 @@ class ReceiptDate(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             userquery = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
