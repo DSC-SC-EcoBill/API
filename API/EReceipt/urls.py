@@ -25,7 +25,7 @@ urlpatterns = [
     path('main/receipt_list/<str:req_username>/<str:s_date>/<str:e_date>/', ReceiptDateSelect.as_view()),  # 지정한 날짜 단위로 반환
 
 
-    path('', index, name='index page'),
-    path('chargepost/', ChargePostView.as_view(), name='chargepost'),
+    path('pos/', index, name='index page'),
+    path('pos/chargepost/', ChargePostView.as_view(), name='chargepost'),
 ]
 
