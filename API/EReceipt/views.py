@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from knox.models import AuthToken
 from rest_framework import mixins
 from django_filters.rest_framework import DjangoFilterBackend
+import os, tempfile
 
 # Gmail 발송
 import smtplib
@@ -33,6 +34,10 @@ from dateutil.relativedelta import relativedelta
 
 # total price
 from django.db.models import Sum
+
+# 영수증 생성
+from PIL import Image, ImageDraw
+import qrcode
 
 
 # -----------------------------------------------------------
@@ -417,3 +422,133 @@ class ReceiptDate(generics.GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as ex:
             return Response(ex, status=status.HTTP_400_BAD_REQUEST)
+
+
+# -----------------------------------------------------------
+# 포스기 프로그램
+
+device_id = 2
+
+
+# 포스기 html rendering
+def index(request):
+    return render(request, 'EReceipt/Ecobill.html', {})
+
+
+# 결제 버튼 클릭시 영수증 이미지 생성 및 gcs업로드, qr코드 이미지 생성 및 반환
+class ChargePostView(APIView):
+    def post(self, request, *args, **kwargs):
+        pos = PosFuncs()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # 영수증 이미지 생성
+            img_dir = pos.receipt_generator(
+                request.data['total_amount'], request.data['items'], request.data['prices'], tmpdir
+            )
+            # gcs에 이미지 업로드 후 link return
+            url, uri = pos.upload_file_gcs(img_dir)
+
+            # Receipt Model에 data 추가
+            qr_link = pos.make_new_tuple(url, uri)
+
+            # QR코드 생성
+            img_dir = pos.qrcode_generator(qr_link, tmpdir)
+
+            return Response(img_dir)
+        # return Response('yeah')
+
+
+class PosFuncs:
+    def receipt_generator(self, total_amount, items, prices, tempdir):
+        # 영수증 내용 작성
+        receipt_start = '''
+            DSC Sahmyook Doyoubucks
+    Address : 815, Hwarang-ro, Nowon-gu, Seoul
+    TEL : (02)3399-3636
+    ------------------------------------------
+    Items                           Price
+        '''
+
+        # item 목록 작성
+        receipt_body = [receipt_start, ]
+        for _ in range(len(items)):
+            receipt_body.append('''
+        {0:<28}    {1}
+            '''.format(items[_], prices[_]))
+
+        receipt_end = '''
+    ------------------------------------------
+    Total                           {} won
+    ------------------------------------------
+                    Thank you!
+        '''.format(total_amount)
+        receipt_body.append(receipt_end)
+
+        # 영수증 내용 합치기
+        receipt_result = ''.join(receipt_body)
+
+        # Image 생성
+        img = Image.new('RGB', size=(300, 311), color='White')
+        d = ImageDraw.Draw(img)
+        d.text((0, 0), receipt_result, fill='black', spacing=0)
+        img_dir = tempdir+'/receipt.jpg'
+        img.save(img_dir)
+
+        return img_dir
+
+    # 스토리지 파일 업로드 함수 & url과 uri 반환
+    def upload_file_gcs(self, img_dir, bucket_name='dsc_ereceipt_storage'):
+        # file_name : 업로드할 파일명
+        # destination_blob_name : 업로드될 경로와 파일명
+        # bucket_name : 업로드할 버킷명
+
+        now = datetime.datetime.now()
+        image_name = '{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute, now.second)
+        file_name = open(img_dir, 'rb')                                           # 업로드할 이미지의 파일 객체
+        destination_blob_name = 'receipts/{}.jpg'.format(image_name)              # 업로드할 이미지의 gcs 경로
+
+        try:
+            # upload img
+            storage_client = storage.Client()
+            bucket = storage_client.get_bucket(bucket_name)
+            blob = bucket.blob(destination_blob_name)
+            blob.upload_from_file(file_name)
+        except Exception as ex:
+            print('upload :', ex)
+
+        try:
+            # get url from gcs
+            bucket_get = storage_client.bucket(bucket_name)
+            blob_get = bucket_get.blob(destination_blob_name)
+            return blob_get.public_url, 'gs:/' + blob_get.public_url[30:]
+        except Exception as ex:
+            print('get url : ', ex)
+
+    # Receipt 테이블에 추가
+    def make_new_tuple(self, url, uri):
+        receipt = Receipt()
+        receipt.receipt_img_url = url
+        receipt.receipt_img_uri = uri
+        receipt.device_id = 1
+        receipt.user = User.objects.get(id=1)
+        receipt.save()
+
+        return 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(receipt.id)
+
+    # QR코드 생성
+    def qrcode_generator(self, url, tempdir, imgname='qrcode'):
+        if url is not None:
+            qr = qrcode.QRCode(
+                version=2,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=7,
+                border=2
+            )
+            qr.add_data(url)
+            qr.make()
+            img = qr.make_image(fill_color='black', back_color='white')
+            img_dir = tempdir+'/{}.jpg'.format(imgname)
+            img.save(img_dir)
+            return img_dir
+        else:
+            print(url)
