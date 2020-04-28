@@ -319,9 +319,9 @@ class ReturnReceiptImgList(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def get(self, request, req_username, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
-            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            user = self.queryset.filter(user=User.objects.get(username=request.data['username']))
 
             # device_id를 brand_name으로 변경
             for _ in user:
@@ -338,9 +338,9 @@ class ReceiptTotal(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def get(self, request, req_username, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
-            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            user = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
             dt = datetime.datetime.now()
             months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
@@ -357,9 +357,9 @@ class ReceiptMonth(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def get(self, request, req_username, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
-            user = self.queryset.filter(user=User.objects.get(username=req_username))
+            user = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
             dt = datetime.datetime.now()
             months_ago = (datetime.datetime.now() - relativedelta(days=dt.day) + relativedelta(days=1)).strftime(date_format)
@@ -381,11 +381,11 @@ class ReceiptDateSelect(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def get(self, request, req_username, s_date, e_date, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
-            userquery = self.queryset.filter(user=User.objects.get(username=req_username))
-            st_date = datetime.datetime.strptime(s_date, '%Y-%m-%d')
-            en_date = datetime.datetime.strptime(e_date, '%Y-%m-%d')
+            userquery = self.queryset.filter(user=User.objects.get(username=request.data['username']))
+            st_date = datetime.datetime.strptime(request.data['s_date'], '%Y-%m-%d')
+            en_date = datetime.datetime.strptime(request.data['e_date'], '%Y-%m-%d')
             date_format = "%Y-%m-%d"
             start_date = st_date.strftime(date_format)
             end_date = (en_date + datetime.timedelta(days=1)).strftime(date_format)
@@ -406,11 +406,11 @@ class ReceiptDate(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def get(self, request, req_username, month, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
-            userquery = self.queryset.filter(user=User.objects.get(username=req_username))
+            userquery = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
-            months_ago = (datetime.datetime.now() - relativedelta(months=month)).strftime(date_format)
+            months_ago = (datetime.datetime.now() - relativedelta(months=request.data['month'])).strftime(date_format)
             now_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime(date_format)
             queryset = userquery.filter(receipt_date__range=[months_ago, now_date])
 
