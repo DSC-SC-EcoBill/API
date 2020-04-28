@@ -138,6 +138,25 @@
 	   	color: #fff; 
 	   	margin: 0 0 17.43px 0;
 	   }
+	   .t{
+	   width: 100%;
+	   	height: 100%;
+	   	border: none;
+	   	resize: none;
+	   }
+	   .to{
+	   background-color: transparent;
+	   margin:0;
+	   color: white;
+	   font-weight: bold;
+	   text-align:center;
+	   font-size: 1.2em;
+	   }
+	   .bt{
+	   background-color: #dbdbdb;
+	   font-weight: bold;
+	   font-size: 1em;
+	   }
 
 
 	</style>
@@ -184,7 +203,7 @@
 	</div>
 	<div class="wgrid-25">
           <h2>Coffee&Espresso</h2>
-		<input type="button" class="btn" onclick="but(6100)" value="Cole Foam Cappuccino"  >>
+		<input type="button" class="btn" onclick="but(6100)" value="Cole Foam Cappuccino"  >
 		<input type="button" class="btn" onclick="but(6100)" value="Caramel Macchiato"  >
 		<input type="button" class="btn" onclick="but(6100)" value="Caffe Mocha"  >
 		<input type="button" class="btn" onclick="but(6100)" value="Caffe Latte"  >
@@ -201,10 +220,11 @@
 		<div class="wgrid-50">
 			<!--구매할 상품 목록-->
 			<div class="wgrid-60" id=ProductList>
+				<textarea class=t name="Pro" id="Pro"></textarea>
 			</div>
 			<!--구매할 상품 가격-->
 			<div class="wgrid-40" id=ProductPrice>
-				<div class="product">10000</div>
+				<textarea class=t name="price" id="price"></textarea>
 			</div>
 		</div>
 
@@ -212,9 +232,9 @@
 			<h3 style="color: #fff; margin: 17.43px 0 10.43px 0">Total Amount</h3>
 
 			<!--총 상품 가격-->
-			<div class="total_price" id="TotalPrice">10000</div>
-			<button type="submit" name="" id="charge"  >charge</button>
-			<button type="submit" name="" id="clear"  >clear</button>
+			<div class="total_price" id="TotalPrice"><input class="to" type="text" name="disp" id="disp" value="0"></div>
+			<input type="button" name="" class="bt" value="Charge"  >
+			<input type="button" value="Clear" class="bt" onclick="c()">
 
 		</div>
 		<div class="wgrid-25" style="padding: 0 24px 24px 24px">
@@ -228,6 +248,6 @@
 
 </div>
 </div>
-<script src="Ecobill.js"></script>
+<script src="Eco.js"></script>
 </body>
 </html>
