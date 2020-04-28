@@ -23,5 +23,8 @@ urlpatterns = [
     path('main/receipt_list/<str:req_username>/<str:s_date>/<str:e_date>/', ReceiptDateSelect.as_view()),  # 지정한 날짜 단위로 반환
     path('main/receipt_month/<str:req_username>/', ReceiptMonth.as_view()),  # 이번달 날짜로 반환
     path('main/receipt/<str:req_username>/', ReceiptTotal.as_view()),  # 이번달 소비금액 반환
+
+    path('', index, name='index page'),
+    path('chargepost/', ChargePostView.as_view(), name='chargepost'),
 ]
 
