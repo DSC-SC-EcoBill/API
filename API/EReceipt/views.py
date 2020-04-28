@@ -406,7 +406,7 @@ class ReceiptDate(generics.GenericAPIView):
     serializer_class = ReceiptDateSerializer
     queryset = Receipt.objects.all()
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
             userquery = self.queryset.filter(user=User.objects.get(username=request.data['username']))
             date_format = "%Y-%m-%d"
