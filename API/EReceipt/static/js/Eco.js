@@ -34,23 +34,16 @@
 
         // 서버에 데이터 보내는 함수
         function send() {
-            var httpRequest;
-            httpRequest = new XMLHttpRequest();
-            httpRequest.onreadystatechange = function(){
-                if(httpRequest.status === 200){
+        var httpRequest = new XMLHttpRequest();
+        var aJson = new Object();
 
-                }else{
-                    alert(httpRequest.status);
-                }
-            };
-            httpRequest.open('POST', 'http://127.0.0.1:8000/api/pos/chargepost/', true);
+        httpRequest.open('POST', '/api/pos/chargepost/');
+        httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 
-            var aJson = new Object();
+        aJson.total_amount = "4000";
+        aJson.items = "a";
+        aJson.prices = "3";
 
-            aJson.total_amount = "4000";
-            aJson.items = "a";
-            aJson.prices = "3";
-
-            httpRequest.send(JSON.stringify(aJson));
-        }
-
+        JSON.stringify(aJson);
+        httpRequest.send(JSON.stringify(aJson));
+    }
