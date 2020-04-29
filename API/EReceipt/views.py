@@ -439,40 +439,37 @@ def index(request):
 class ChargePostView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # request 데이터 가공
+            pos = PosFuncs()
+            total_amount, items, prices = pos.get_datas(request)
+
+            # 영수증 이미지 생성
+            img_dir = pos.receipt_generator(total_amount, items, prices, tmpdir)
+
+            # gcs에 이미지 업로드 후 link return
+            now = datetime.datetime.now()
+            image_name = 'r{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
+                                                   now.second)
+            destination_blob_name = 'receipts/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
+            url, uri = pos.upload_file_gcs(img_dir, destination_blob_name)
+
+            # Receipt Model에 data 추가
+            qr_link = pos.make_new_tuple(url, uri)
+
+            # QR코드 생성
+            qr_img_dir = pos.qrcode_generator(qr_link, tmpdir)
+
+            # gcs에 QR이미지 업로드 후 link return
+            image_name = 'q{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
+                                                    now.second)
+            qr_destination_blob_name = 'QRCodes/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
+            qr_url, uri = pos.upload_file_gcs(qr_img_dir, qr_destination_blob_name)
+
+            # return render(request, 'EReceipt/Ecobill.html', {'qr_img': qr_url})
+            return Response(qr_url)
         return Response('yeah')
-        # pos = PosFuncs()
-        # try:
-        #     with tempfile.TemporaryDirectory() as tmpdir:
-        #         # 영수증 이미지 생성
-        #         img_dir = pos.receipt_generator(
-        #             request.data['total_amount'], request.data['items'], request.data['prices'], tmpdir
-        #         )
-        #
-        #         # gcs에 이미지 업로드 후 link return
-        #         now = datetime.datetime.now()
-        #         image_name = 'r{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
-        #                                                now.second)
-        #         destination_blob_name = 'receipts/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
-        #         url, uri = pos.upload_file_gcs(img_dir, destination_blob_name)
-        #
-        #         # Receipt Model에 data 추가
-        #         qr_link = pos.make_new_tuple(url, uri)
-        #
-        #         # QR코드 생성
-        #         qr_img_dir = pos.qrcode_generator(qr_link, tmpdir)
-        #
-        #         # gcs에 QR이미지 업로드 후 link return
-        #         image_name = 'q{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
-        #                                                 now.second)
-        #         qr_destination_blob_name = 'QRCodes/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
-        #         qr_url, uri = pos.upload_file_gcs(qr_img_dir, qr_destination_blob_name)
-        #
-        #         return render(request, 'EReceipt/Ecobill.html', {'qr_img': qr_url})
-        # except Exception as ex:
-        #     print(ex)
-        #     return Response(ex)
-        # return Response('yeah')
+        # return Response('chargepost')
 
 
 class PosFuncs:
@@ -566,3 +563,32 @@ class PosFuncs:
             return img_dir
         else:
             print(url)
+
+    def get_datas(self, data):
+        myDict = data.data.dict()
+        for _ in myDict.keys():
+            strdict = _
+
+        t_s = strdict.find('total_amount')
+        i_s = strdict.find('items')
+        p_s = strdict.find('prices')
+
+        t_str = strdict[t_s:i_s-2]
+        i_str = strdict[i_s:p_s-2]
+        p_str = strdict[p_s:-1]
+
+        # 토탈금액
+        total = int(t_str[14:])
+
+        # item list
+        item = []
+        for _ in i_str[8:-1].split(','):
+            item.append(_[1:-1])
+
+        # price list
+        price = []
+        for _ in p_str[9:-1].split(','):
+            price.append(int(_))
+
+        return total, item, price
+

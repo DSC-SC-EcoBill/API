@@ -36,16 +36,29 @@
 
         // 서버에 데이터 보내는 함수
         function send() {
-        var httpRequest = new XMLHttpRequest();
         var aJson = new Object();
-
-        httpRequest.open('POST', '/api/pos/chargepost/');
-        httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-
         aJson.total_amount = total;
         aJson.items = product_list;
         aJson.prices = product_price;
 
-        JSON.stringify(aJson);
+        var httpRequest = new XMLHttpRequest();
+
+        httpRequest.onreadystatechange = function(){
+            if(httpRequest.readyState === XMLHttpRequest.DONE){
+                alert('준비끝');
+            }
+            else{
+                alert('준비 안 끝');
+            }
+
+            if(httpRequest.status === 200) {
+                alert(httpRequest.responseText);
+                document.getElementById('img').src=httpRequest.responseText;
+            }else{
+                alert("이상있음!");
+            }
+        }
+        httpRequest.open('POST', '/api/pos/chargepost/', false);
+        httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
         httpRequest.send(JSON.stringify(aJson));
     }
