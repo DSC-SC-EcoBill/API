@@ -22,35 +22,13 @@
         }
 
         function c(){
-        flag = true;
-        total= 0;
-        document.getElementById('disp').value = "0";
-        document.getElementById('Pro').value = "";
-        document.getElementById('price').value = "";
-        product_list = [];
-        product_price = [];
-        x = 0;
-        }
-
-        // 서버에 데이터 보내는 함수
-        function send() {
-            var httpRequest;
-            httpRequest = new XMLHttpRequest();
-            httpRequest.onreadystatechange = function(){
-                if(httpRequest.status === 200){
-
-                }else{
-                    alert(httpRequest.status);
-                }
-            };
-            httpRequest.open('POST', 'http://127.0.0.1:8000/api/pos/chargepost/', true);
-
-            var aJson = new Object();
-
-            aJson.total_amount = "4000";
-            aJson.items = "a";
-            aJson.prices = "3";
-
-            httpRequest.send(JSON.stringify(aJson));
+            flag = true;
+            total= 0;
+            document.getElementById('disp').value = "0";
+            document.getElementById('Pro').value = "";
+            document.getElementById('price').value = "";
+            product_list = [];
+            product_price = [];
+            x = 0;
         }
 
