@@ -1,7 +1,9 @@
         var total = 0;
-        var product_list = [];
-        var product_price = [];
-        var x,pc,pr = 0;
+        var product_list = new Array();
+        var product_price = new Array();
+        var x = 0;
+        var pc = 0;
+        var pr = 0;
         var br = "\n";
 
         function but(su){
@@ -40,9 +42,9 @@
         httpRequest.open('POST', '/api/pos/chargepost/');
         httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 
-        aJson.total_amount = "4000";
-        aJson.items = "a";
-        aJson.prices = "3";
+        aJson.total_amount = total;
+        aJson.items = product_list;
+        aJson.prices = product_price;
 
         JSON.stringify(aJson);
         httpRequest.send(JSON.stringify(aJson));

@@ -436,36 +436,42 @@ def index(request):
 
 
 # 결제 버튼 클릭시 영수증 이미지 생성 및 gcs업로드, qr코드 이미지 생성 및 반환
-class ChargePostView(APIView):
+class ChargePostView(generics.GenericAPIView):
+
     def post(self, request, *args, **kwargs):
-        pos = PosFuncs()
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # 영수증 이미지 생성
-            img_dir = pos.receipt_generator(
-                request.data['total_amount'], request.data['items'], request.data['prices'], tmpdir
-            )
-
-            # gcs에 이미지 업로드 후 link return
-            now = datetime.datetime.now()
-            image_name = 'r{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
-                                                   now.second)
-            destination_blob_name = 'receipts/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
-            url, uri = pos.upload_file_gcs(img_dir, destination_blob_name)
-
-            # Receipt Model에 data 추가
-            qr_link = pos.make_new_tuple(url, uri)
-
-            # QR코드 생성
-            qr_img_dir = pos.qrcode_generator(qr_link, tmpdir)
-
-            # gcs에 QR이미지 업로드 후 link return
-            image_name = 'q{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
-                                                    now.second)
-            qr_destination_blob_name = 'QRCodes/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
-            qr_url, uri = pos.upload_file_gcs(qr_img_dir, qr_destination_blob_name)
-
-            return render(request, 'EReceipt/Ecobill.html', {'qr_img': qr_url})
+        print(request.data)
+        return Response('yeah')
+        # pos = PosFuncs()
+        # try:
+        #     with tempfile.TemporaryDirectory() as tmpdir:
+        #         # 영수증 이미지 생성
+        #         img_dir = pos.receipt_generator(
+        #             request.data['total_amount'], request.data['items'], request.data['prices'], tmpdir
+        #         )
+        #
+        #         # gcs에 이미지 업로드 후 link return
+        #         now = datetime.datetime.now()
+        #         image_name = 'r{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
+        #                                                now.second)
+        #         destination_blob_name = 'receipts/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
+        #         url, uri = pos.upload_file_gcs(img_dir, destination_blob_name)
+        #
+        #         # Receipt Model에 data 추가
+        #         qr_link = pos.make_new_tuple(url, uri)
+        #
+        #         # QR코드 생성
+        #         qr_img_dir = pos.qrcode_generator(qr_link, tmpdir)
+        #
+        #         # gcs에 QR이미지 업로드 후 link return
+        #         image_name = 'q{}_{}{}{}_{}{}{}'.format(device_id, now.year, now.month, now.day, now.hour, now.minute,
+        #                                                 now.second)
+        #         qr_destination_blob_name = 'QRCodes/{}.jpg'.format(image_name)  # 업로드할 이미지의 gcs 경로
+        #         qr_url, uri = pos.upload_file_gcs(qr_img_dir, qr_destination_blob_name)
+        #
+        #         return render(request, 'EReceipt/Ecobill.html', {'qr_img': qr_url})
+        # except Exception as ex:
+        #     print(ex)
+        #     return Response(ex)
         # return Response('yeah')
 
 
