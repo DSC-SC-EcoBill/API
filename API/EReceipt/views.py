@@ -208,7 +208,7 @@ class CreateReceiptTuple(generics.GenericAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            return_url = 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(
+            return_url = 'http://dsc-receipt.du.r.appspot.com/api/main/check_user_link/{}'.format(
                 Receipt.objects.get(receipt_img_url=request.data['receipt_img_url']).id
             )
             return Response(return_url, status=status.HTTP_201_CREATED)
@@ -544,7 +544,7 @@ class PosFuncs:
         receipt.user = User.objects.get(id=1)
         receipt.save()
 
-        return 'http://dsc-ereceipt.appspot.com/api/main/check_user_link/{}'.format(receipt.id)
+        return 'http://dsc-receipt.du.r.appspot.com/api/main/check_user_link/{}'.format(receipt.id)
 
     # QR코드 생성
     def qrcode_generator(self, url, tempdir, imgname='qrcode'):

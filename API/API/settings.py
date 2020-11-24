@@ -93,10 +93,11 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'EchoBill',
-            'USER': 'ksanbal',
-            'PASSWORD': '1021',
-            'HOST': '/cloudsql/dsc-ereceipt:asia-northeast3:echobill-db',
+            'NAME': 'dsc_receipt',
+            'USER': 'root',
+            'PASSWORD': '6900',
+            # 'HOST': '/cloudsql/dsc-ereceipt:asia-northeast3:echobill-db',
+            'HOST': '/cloudsql/dsc-receipt:asia-northeast3:ereceipt',
         }
     }
 # Local에서 실행되는 경우
@@ -104,9 +105,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'EchoBill',
-            'USER': 'ksanbal',
-            'PASSWORD': '1021',
+            'NAME': 'dsc_receipt',
+            'USER': 'root',
+            'PASSWORD': '6900',
             'HOST': '127.0.0.1',
             'PORT': '3306'
         }
